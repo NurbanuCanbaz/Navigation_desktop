@@ -28,6 +28,7 @@ android {
     }
 }
 
+
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -39,4 +40,8 @@ dependencies {
 
     //mapbox dependencies
     implementation 'com.mapbox.navigation:android:2.19.0'
+
+
+
+
 }
