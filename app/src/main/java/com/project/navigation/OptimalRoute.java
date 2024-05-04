@@ -8,6 +8,7 @@ import static com.mapbox.navigation.base.extensions.RouteOptionsExtensions.apply
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,6 +16,7 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
@@ -95,6 +97,7 @@ import kotlin.jvm.functions.Function1;
 
 public class OptimalRoute extends AppCompatActivity {
     MapView mapView;
+    Button Return;
     MaterialButton setRoute;
     FloatingActionButton focusLocationBtn;
     private final NavigationLocationProvider navigationLocationProvider = new NavigationLocationProvider();
@@ -341,6 +344,19 @@ public class OptimalRoute extends AppCompatActivity {
                         focusLocationBtn.hide();
                     }
                 });
+            }
+        });
+        Return=(Button)findViewById(R.id.Return);
+        Return.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(OptimalRoute.this, Dashboard.class);
+                startActivity(intent);
+                finish();
+                return;
+
+
             }
         });
     }

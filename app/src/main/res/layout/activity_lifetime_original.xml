@@ -5,6 +5,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".LifetimeOriginal">
+    <Button
+        android:id="@+id/Return"
+        android:layout_width="130dp"
+        android:layout_height="55dp"
+        android:layout_gravity="center"
+        android:background="@drawable/rectangular_whitbackgraund"
+        android:backgroundTint="#674FA3"
+        android:drawableLeft="@drawable/arrow_back_24"
+        android:text="Return"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="1dp"
+        tools:layout_editor_absoluteY="16dp" />
 
     <com.mapbox.maps.MapView
         android:layout_width="match_parent"

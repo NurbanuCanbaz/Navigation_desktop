@@ -8,20 +8,21 @@ import android.view.View;
 import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
-    private Button Lifetime, OptimalRoute;
+    private Button Dashboard ,Return;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Lifetime=(Button) findViewById(R.id.LifetimeOriginal);
-        OptimalRoute=(Button) findViewById(R.id.OptimalRoute);
+        Dashboard=(Button) findViewById(R.id.Dashboard);
+        Return=(Button) findViewById(R.id.Return);
 
-        Lifetime.setOnClickListener(new View.OnClickListener() {
+
+        Dashboard.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
-                                            Intent intent = new Intent(MainActivity.this, LifetimeOriginal.class);
+                                            Intent intent = new Intent(MainActivity.this, Dashboard.class);
                                             startActivity(intent);
                                             finish();
                                             return;
@@ -30,10 +31,10 @@ public class MainActivity extends AppCompatActivity {
                                     }
         );
 
-        OptimalRoute.setOnClickListener(new View.OnClickListener() {
+        Return.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
-                                            Intent intent = new Intent(MainActivity.this, OptimalRoute.class);
+                                            Intent intent = new Intent(MainActivity.this, LoginPage.class);
                                             startActivity(intent);
                                             finish();
                                             return;

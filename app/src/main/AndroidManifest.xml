@@ -17,6 +17,45 @@
         android:theme="@style/Theme.Navigation"
         tools:targetApi="31">
         <activity
+            android:name=".RegistrationPage"
+            android:exported="false" />
+        <activity
+            android:name=".PaymentPage"
+            android:exported="false" />
+        <activity
+            android:name=".ForgetPasswordPage"
+            android:exported="false" />
+        <activity
+            android:name=".ChangeAddressPage"
+            android:exported="false" />
+        <activity
+            android:name=".AttendencePage"
+            android:exported="false" />
+        <activity
+            android:name=".LoginPage"
+            android:exported="false" />
+        <activity
+            android:name=".NotificationSystemPage"
+            android:exported="false" />
+        <activity
+            android:name=".ChatBotSystemPage"
+            android:exported="false" />
+        <activity
+            android:name=".CurrentLocationSystemPage"
+            android:exported="false" />
+        <activity
+            android:name=".HowToSystemPage"
+            android:exported="false" />
+        <activity
+            android:name=".SuggestionPage"
+            android:exported="false" />
+        <activity
+            android:name=".ProfilePage"
+            android:exported="false" />
+        <activity
+            android:name=".Dashboard"
+            android:exported="false" />
+        <activity
             android:name=".OptimalRoute"
             android:exported="false" />
         <activity

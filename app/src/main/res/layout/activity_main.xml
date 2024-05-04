@@ -8,20 +8,23 @@
 
 
     <Button
-        android:id="@+id/LifetimeOriginal"
+        android:id="@+id/Dashboard"
         android:layout_width="140dp"
         android:layout_height="140dp"
-        android:text="Lifetime"
+        android:text="Dashboard"
         android:layout_marginTop="200dp"
         android:layout_marginLeft="100dp"
  />
 
     <Button
-        android:id="@+id/OptimalRoute"
-        android:layout_width="140dp"
-        android:layout_height="140dp"
-        android:text="OptimalRoute"
-        android:layout_marginTop="400dp"
+        android:id="@+id/Return"
+        android:layout_width="224dp"
+        android:layout_height="197dp"
         android:layout_marginLeft="100dp"
- />
+        android:layout_marginTop="400dp"
+        android:background="@drawable/arrow_back_24"
+        android:text="Return"
+
+
+        />
 </RelativeLayout>

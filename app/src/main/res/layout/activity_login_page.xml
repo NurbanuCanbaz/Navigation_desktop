@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.project.navigation.MainActivity"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#5E9987"
+    >
+
+
+    <Button
+        android:id="@+id/Return"
+        android:layout_width="135dp"
+        android:layout_height="55dp"
+        android:layout_gravity="start|center"
+        android:layout_marginBottom="1dp"
+        android:background="@drawable/rectangular_whitbackgraund"
+        android:backgroundTint="#674FA3"
+        android:drawableLeft="@drawable/arrow_back_24"
+        android:text="Return"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="140dp"
+        android:layout_height="93dp"
+        android:layout_gravity="left"
+        android:layout_margin="50dp"
+        app:srcCompat="@drawable/account_circle_light" />
+
+    <EditText
+        android:id="@+id/Email"
+        android:layout_width="250dp"
+        android:layout_height="70dp"
+        android:layout_gravity="top"
+        android:layout_marginLeft="70dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/rectangular_whitbackgraund"
+        android:hint="email"
+        android:padding="20dp"
+        android:textColorHint="#674FA3"
+        android:textSize="70px" />
+    <EditText
+        android:id="@+id/Password"
+        android:layout_width="250dp"
+        android:layout_height="70dp"
+        android:layout_gravity="top"
+        android:layout_marginLeft="70dp"
+        android:layout_marginBottom="100dp"
+        android:background="@drawable/rectangular_whitbackgraund"
+        android:hint="password"
+        android:padding="20dp"
+        android:textColorHint="#674FA3"
+        android:textSize="70px" />
+
+
+    <Button
+        android:id="@+id/LogIn"
+        android:layout_width="150dp"
+        android:layout_height="60dp"
+        android:layout_marginLeft="40dp"
+        android:background="@drawable/rectangular_whitbackgraund"
+        android:backgroundTint="#71C3AE"
+        android:text="Log in"
+        android:textColor="#FFFFFF" />
+
+
+</LinearLayout>
