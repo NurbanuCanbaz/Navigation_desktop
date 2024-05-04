@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SuggestionPage">
+
+
+    <Button
+        android:id="@+id/Return"
+        android:layout_width="130dp"
+        android:layout_height="55dp"
+        android:layout_gravity="start|center"
+        android:layout_marginBottom="1dp"
+        android:background="@drawable/rectangular_whitbackgraund"
+        android:backgroundTint="#674FA3"
+        android:drawableLeft="@drawable/arrow_back_24"
+        android:text="Return"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+         />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="240dp"
+        android:layout_height="47dp"
+        android:layout_marginStart="150sp"
+        android:layout_marginLeft="@dimen/mapbox_recenterButton_minExtendedWidth"
+        android:layout_marginEnd="10sp"
+        android:layout_marginBottom="100sp"
+        android:text="Suggestion"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="92dp"
+        tools:layout_editor_absoluteY="68dp" />
+
+    <EditText
+        android:id="@+id/platetext"
+        android:layout_width="200dp"
+        android:layout_height="48dp"
+        android:background="@drawable/rectangular_greenbackgraund"
+        android:ems="10"
+        android:layout_marginTop="100sp"
+        android:layout_marginLeft="30sp"
+        android:inputType="text"
+        android:text="Vehicles Plate Number"
+        android:textAlignment="center"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="35dp"
+
+        tools:layout_editor_absoluteY="136dp" />
+    <EditText
+        android:id="@+id/name_text"
+        android:layout_width="200dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="150sp"
+        android:layout_marginLeft="30sp"
+        android:background="#EFEFEF"
+        android:ems="10"
+        android:inputType="text"
+        android:text="Type Here"
+        android:textSize="16dp"
+        android:textAlignment="center"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="35dp"
+        tools:layout_editor_absoluteY="280dp" />
+
+    <EditText
+        android:id="@+id/editTextText2"
+        android:layout_width="200dp"
+        android:layout_marginTop="210sp"
+        android:layout_height="48dp"
+        android:layout_marginLeft="30sp"
+        android:background="@drawable/rectangular_greenbackgraund"
+        android:ems="10"
+        android:inputType="text"
+        android:text="Name/Surname"
+        android:textAlignment="center"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="35dp"
+        tools:layout_editor_absoluteY="232dp" />
+    <EditText
+        android:id="@+id/editTextText3"
+        android:layout_width="200dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="260sp"
+        android:background="#EFEFEF"
+        android:ems="10"
+        android:layout_marginLeft="30sp"
+        android:inputType="text"
+        android:text="Type Here"
+        android:textAlignment="center"
+        android:textSize="16dp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="35dp"
+        tools:layout_editor_absoluteY="184dp" />
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="200dp"
+        android:layout_height="48dp"
+        android:background="@drawable/rectangular_greenbackgraund"
+        android:ems="10"
+        android:layout_marginTop="330sp"
+        android:layout_marginLeft="30sp"
+        android:textColor="@color/black"
+        android:inputType="text"
+        android:text="Issue Details"
+        android:textAlignment="center"
+        android:textSize="20dp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="35dp"
+        tools:layout_editor_absoluteY="347dp"
+
+        />
+
+
+    <EditText
+        android:id="@+id/typesuggestion"
+        android:layout_width="356dp"
+        android:layout_height="253dp"
+        android:layout_marginTop="400sp"
+        android:layout_marginLeft="30sp"
+        android:background="#EFEFEF"
+        android:text="Type Here"
+        android:textAlignment="center"
+        android:textColorHint="@color/black"
+        android:textSize="16dp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="35dp"
+        tools:layout_editor_absoluteY="395dp"
+
+        />
+
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="106dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="660sp"
+        android:background="@drawable/rectangular_purplebackgraund"
+        android:text="Submit"
+        android:layout_marginLeft="30sp"
+
+        android:textAlignment="center"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="272dp"
+        tools:layout_editor_absoluteY="676dp" />
+
+
+
+</RelativeLayout>

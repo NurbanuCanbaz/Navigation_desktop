@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.project.navigation.ProfilePage"
+    android:orientation="vertical"
+    android:gravity="center_vertical|center_horizontal"
+    android:background="#71C3AE"
+    >
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|left"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/Return"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|center"
+            android:background="@drawable/rectangular_whitbackgraund"
+            android:backgroundTint="#5E9987"
+            android:drawableLeft="@drawable/arrow_back_24"
+            android:text="Return"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:textSize="40px" />
+
+        <TextView
+            android:layout_width="240dp"
+            android:layout_height="match_parent"
+            android:backgroundTint="#EFEFEF"
+            android:gravity="center"
+            android:text="Profile"
+            android:textColor="#000000"
+            android:textSize="60px" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="384dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|left"
+        android:orientation="horizontal"
+        android:layout_marginTop="70dp"
+        >
+
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="116dp"
+            android:layout_height="87dp"
+            app:srcCompat="@drawable/baseline_account_circle_24" />
+
+        <EditText
+            android:id="@+id/Name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:backgroundTint="#EFEFEF"
+            android:text="Name"
+            android:textColor="#000000"
+            android:textSize="60px" />
+
+        <EditText
+            android:id="@+id/SurName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:backgroundTint="#EFEFEF"
+            android:text="Surname"
+            android:textColor="#000000"
+            android:textSize="60px" />
+
+
+    </LinearLayout>
+
+    <Button
+
+        android:layout_marginTop="40dp"
+        android:id="@+id/Attendence"
+        android:layout_width="250dp"
+        android:layout_height="60dp"
+        android:backgroundTint="#EFEFEF"
+        android:text="Attendence"
+        android:textColor="#000000"
+        android:drawableLeft="@drawable/baseline_alarm_on_24"
+        />
+
+
+    <Button
+        android:id="@+id/ChangeAddress"
+        android:layout_width="250dp"
+        android:layout_height="60dp"
+        android:backgroundTint="#EFEFEF"
+        android:text="Change Address"
+        android:textColor="#000000"
+        android:drawableLeft="@drawable/baseline_location_off_24"
+        />
+
+    <Button
+        android:id="@+id/Payment"
+        android:layout_width="250dp"
+        android:layout_height="60dp"
+        android:backgroundTint="#EFEFEF"
+        android:text="Payment"
+        android:textColor="#000000"
+        android:drawableLeft="@drawable/baseline_payment_24"
+
+        />
+
+    <Button
+        android:id="@+id/EditProfile"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_marginLeft="135px"
+        android:backgroundTint="#5E9987"
+        android:text="Edit Profile"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="150dp"
+        android:background="@drawable/rectangular_whitbackgraund"
+        android:textColor="#FFFFFF" />
+
+
+</LinearLayout>
