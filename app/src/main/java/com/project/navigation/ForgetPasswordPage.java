@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import com.project.navigation.activities.MainActivity;
+
 public class ForgetPasswordPage extends AppCompatActivity {
     private Button Return;
     @Override

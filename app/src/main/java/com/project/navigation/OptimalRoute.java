@@ -16,8 +16,11 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.Toast;
+import android.widget.ZoomButton;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -95,11 +98,20 @@ import java.util.Objects;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
-public class OptimalRoute extends AppCompatActivity {
+import android.app.Activity;
+import android.os.Bundle;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.ImageView;
+
+public class OptimalRoute extends AppCompatActivity  {
     MapView mapView;
-    Button Return;
+    Button Return, ZoomIn,ZoomOut;
     MaterialButton setRoute;
     FloatingActionButton focusLocationBtn;
+    Animation animation,animation2;
     private final NavigationLocationProvider navigationLocationProvider = new NavigationLocationProvider();
     private MapboxRouteLineView routeLineView;
     private MapboxRouteLineApi routeLineApi;
@@ -359,7 +371,12 @@ public class OptimalRoute extends AppCompatActivity {
 
             }
         });
+
     }
+
+
+
+
 
     @SuppressLint("MissingPermission")
     private void fetchRoute(List<Point> point) {
@@ -439,4 +456,5 @@ public class OptimalRoute extends AppCompatActivity {
         mapboxNavigation.unregisterRoutesObserver(routesObserver);
         mapboxNavigation.unregisterLocationObserver(locationObserver);
     }
+
 }
