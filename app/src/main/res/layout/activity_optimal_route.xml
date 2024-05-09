@@ -5,33 +5,162 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".OptimalRoute">
-    <Button
-        android:id="@+id/Return"
-        android:layout_width="130dp"
-        android:layout_height="55dp"
-        android:layout_gravity="center"
-        android:background="@drawable/rectangular_whitbackgraund"
-        android:backgroundTint="#674FA3"
-        android:drawableLeft="@drawable/arrow_back_24"
-        android:text="Return"
-        android:textAlignment="center"
-        android:textColor="#FFFFFF"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="16dp" />
+    <RelativeLayout
+        android:layout_width="500dp"
+        android:layout_height="370dp"
+        android:background="@drawable/baseline_square_24"
+        >
+        <LinearLayout
+            android:layout_width="500dp"
+            android:layout_height="85dp"
+            android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/Return"
+            android:layout_width="100dp"
+            android:layout_height="55dp"
+            android:layout_marginTop="25sp"
+            android:backgroundTint="#FFFFFF"
+            android:drawableLeft="@drawable/baseline_arrow_back_24"
+            android:text="Return"
+            />
+
+        <TextView
+            android:layout_width="300dp"
+            android:layout_height="50dp"
+            android:text="Optimal Route"
+            android:layout_marginLeft="10dp"
+            android:editable="false"
+            android:layout_marginTop="25sp"
+            android:textSize="30dp"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="500dp"
+            android:layout_height="20dp"
+            android:text="From"
+            android:editable="false"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="90sp"
+            android:textColor="@color/white"/>
+        <Button
+            android:id="@+id/From"
+            android:layout_marginLeft="10dp"
+            android:layout_width="400dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="110sp"
+            android:layout_marginRight="5dp"
+            android:backgroundTint="@color/white"
+            android:textColor="@color/black"
+            android:text="Station 13"
+            android:textAlignment="textStart"
+            android:textSize="18dp" />
+        <TextView
+            android:layout_width="500dp"
+            android:layout_height="20dp"
+            android:text="To"
+            android:editable="false"
+            android:layout_marginTop="160sp"
+            android:layout_marginLeft="10dp"
+            android:textColor="@color/white"/>
+
+        <Button
+            android:id="@+id/To"
+            android:layout_marginLeft="10dp"
+            android:layout_width="400dp"
+            android:layout_height="48dp"
+            android:textColor="@color/black"
+            android:layout_marginTop="180sp"
+            android:backgroundTint="#FFFFFF"
+            android:text="Station 14"
+            android:textAlignment="textStart"
+            android:textSize="18dp"
+            />
+
+
+        <LinearLayout
+            android:layout_width="500dp"
+            android:layout_height="300dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="230dp"
+            android:layout_marginBottom="115dp">
+
+                <TextView
+                    android:layout_width="100dp"
+                    android:layout_height="50dp"
+                    android:layout_marginLeft="10dp"
+                    android:text="Departure Time"
+                    android:editable="false"
+                    android:textColor="@color/white" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="Arrival Time"
+                    android:editable="false"
+                    android:layout_marginLeft="140dp"
+                    android:textColor="@color/white"/>
+            </LinearLayout>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Remaining Time"
+                android:layout_marginLeft="10dp"
+                android:editable="false"
+                android:layout_marginTop="303sp"
+                android:textColor="@color/white"/>
+            <LinearLayout
+                android:layout_width="500dp"
+                android:layout_height="300dp">
+                <Button
+                    android:id="@+id/DepartureTime"
+                    android:layout_width="150dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="255sp"
+                    android:layout_marginLeft="10dp"
+                    android:backgroundTint="#FFFFFF"
+                    android:text="Departure Time"
+                    />
+                <Button
+                    android:id="@+id/ArrivalTime"
+                    android:layout_width="150dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="255sp"
+                    android:layout_marginLeft="80dp"
+                    android:backgroundTint="#FFFFFF"
+                    android:text="Arrival Time"
+                    />
+            </LinearLayout>
+            <Button
+                android:id="@+id/RemainingTime"
+                android:layout_width="100dp"
+                android:layout_marginLeft="10dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="320sp"
+                android:backgroundTint="#FFFFFF"
+                android:text="Return"
+                />
+
+
+        </RelativeLayout>
+
+
 
     <com.mapbox.maps.MapView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/mapView" />
+        android:id="@+id/mapView"
+        android:layout_width="500dp"
+        android:layout_height="400dp"
+        android:layout_marginTop="369dp"/>
 
     <com.mapbox.navigation.ui.voice.view.MapboxSoundButton
+        android:id="@+id/soundButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="64sp"
-        android:layout_marginEnd="10sp"
-        android:id="@+id/soundButton" />
+        android:layout_marginTop="400sp"
+        android:layout_marginLeft="10dp"
+        />
+
+
+
 
     <com.google.android.material.button.MaterialButton
         android:layout_width="match_parent"
@@ -50,6 +179,9 @@
         android:id="@+id/focusLocation"
         android:layout_alignParentEnd="true"
         android:layout_above="@id/setRoute"
-        android:layout_margin="16sp"/>
+        android:backgroundTint="@color/white"
+        android:layout_marginRight="10sp"
+        android:layout_marginBottom="20sp"
+        />
 
 </RelativeLayout>

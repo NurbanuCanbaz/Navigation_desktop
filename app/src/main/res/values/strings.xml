@@ -2,4 +2,15 @@
     <string name="app_name">Navigation</string>
     <string name="mapbox_access_token">sk.eyJ1IjoibnVyYmFudWNhbmJheiIsImEiOiJjbHZpMzBwenoxN3ZjMmtwNXpoY2U4a29hIn0.aJOOvQlksuYh33YkSkIQIQ</string>
 
+    <string name="name">Name</string>
+    <string name="welcome_back_to_routemapp">Welcome Back To RouteMApp</string>
+    <string name="login_to_continue">Login To Continue</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign In</string>
+    <string name="create_new_account">Create New Account</string>
+    <string name="select_user">Select User</string>
+    <string name="online">Online</string>
+    <string name="type_a_message">Type a message</string>
+
 </resources>
