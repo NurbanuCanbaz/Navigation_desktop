@@ -170,6 +170,7 @@
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="20sp"
         android:id="@+id/setRoute"
+        android:backgroundTint="#3e5a19"
         android:text="Set Route"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

@@ -12,6 +12,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.project.navigation.activities.ChatBoxMain;
+import com.project.navigation.activities.SignInActivity;
+
 //import com.google.android.gms.tasks.OnCompleteListener;
 //import com.google.android.gms.tasks.Task;
 
@@ -115,7 +118,7 @@ public class Dashboard extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Intent intentChat = new Intent(Dashboard.this, ChatBotSystemPage.class);
+                Intent intentChat = new Intent(Dashboard.this, ChatBoxMain.class);
                 startActivity(intentChat);
                 finish();
                 return;
@@ -157,7 +160,7 @@ public class Dashboard extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Intent intentReturn = new Intent(Dashboard.this, LoginPage.class);
+                Intent intentReturn = new Intent(Dashboard.this, SignInActivity.class);
                 startActivity(intentReturn);
                 finish();
                 return;
