@@ -21,13 +21,11 @@ import com.project.navigation.activities.SignInActivity;
 public class Dashboard extends AppCompatActivity {
 
     private ImageView  Notification, LifeTime, OptimalRoute, ChatBot, CurrentLocation, Profile, Suggestion, HowTo;
-    private Button Return;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
-        Return = (Button) findViewById(R.id.Return);
         Notification = (ImageView) findViewById(R.id.Notification);
         LifeTime = (ImageView) findViewById(R.id.LifeTime);
         OptimalRoute = (ImageView) findViewById(R.id.OptimalRoute);
@@ -156,18 +154,7 @@ public class Dashboard extends AppCompatActivity {
             }
         });
 
-        Return.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                Intent intentReturn = new Intent(Dashboard.this, SignInActivity.class);
-                startActivity(intentReturn);
-                finish();
-                return;
-
-
-            }
-        });
 
 
 
