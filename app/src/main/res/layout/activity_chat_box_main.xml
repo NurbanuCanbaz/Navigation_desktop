@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:background="#80BBECB0"
+    android:background="#c1b6a4"
     tools:context=".activities.ChatBoxMain">
 
     <com.makeramen.roundedimageview.RoundedImageView
@@ -44,7 +44,7 @@
         android:ellipsize="end"
         android:gravity="center"
         android:maxLines="1"
-        android:textColor="#48a860"
+        android:textColor="#5c0017"
         android:textSize="@dimen/_14ssp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/imageProfile"
@@ -89,7 +89,7 @@
         android:layout_marginBottom="@dimen/_24sdp"
         android:contentDescription="@string/app_name"
         android:src="@drawable/ic_add"
-        android:background="#7539A122"
+        android:backgroundTint="#c1b6a4"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         />

@@ -8,19 +8,16 @@ import static com.mapbox.navigation.base.extensions.RouteOptionsExtensions.apply
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.Toast;
-import android.widget.ZoomButton;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -31,11 +28,11 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineProvider;
 import com.mapbox.android.core.location.LocationEngineResult;
-import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.api.directions.v5.DirectionsCriteria;
 import com.mapbox.api.directions.v5.models.Bearing;
@@ -48,7 +45,6 @@ import com.mapbox.maps.EdgeInsets;
 import com.mapbox.maps.MapView;
 import com.mapbox.maps.Style;
 import com.mapbox.maps.extension.style.layers.properties.generated.TextAnchor;
-import com.mapbox.maps.plugin.Plugin;
 import com.mapbox.maps.plugin.animation.MapAnimationOptions;
 import com.mapbox.maps.plugin.annotation.AnnotationPlugin;
 import com.mapbox.maps.plugin.annotation.AnnotationPluginImplKt;
@@ -60,20 +56,31 @@ import com.mapbox.maps.plugin.gestures.OnMoveListener;
 import com.mapbox.maps.plugin.locationcomponent.LocationComponentConstants;
 import com.mapbox.maps.plugin.locationcomponent.LocationComponentPlugin;
 import com.mapbox.maps.plugin.locationcomponent.generated.LocationComponentSettings;
+import com.mapbox.navigation.base.formatter.DistanceFormatterOptions;
 import com.mapbox.navigation.base.options.NavigationOptions;
 import com.mapbox.navigation.base.route.NavigationRoute;
 import com.mapbox.navigation.base.route.NavigationRouterCallback;
 import com.mapbox.navigation.base.route.RouterFailure;
 import com.mapbox.navigation.base.route.RouterOrigin;
+import com.mapbox.navigation.base.trip.model.RouteProgress;
 import com.mapbox.navigation.core.MapboxNavigation;
 import com.mapbox.navigation.core.directions.session.RoutesObserver;
 import com.mapbox.navigation.core.directions.session.RoutesUpdatedResult;
+import com.mapbox.navigation.core.formatter.MapboxDistanceFormatter;
 import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp;
 import com.mapbox.navigation.core.trip.session.LocationMatcherResult;
 import com.mapbox.navigation.core.trip.session.LocationObserver;
+import com.mapbox.navigation.core.trip.session.RouteProgressObserver;
 import com.mapbox.navigation.core.trip.session.VoiceInstructionsObserver;
 import com.mapbox.navigation.ui.base.util.MapboxNavigationConsumer;
+import com.mapbox.navigation.ui.maneuver.api.MapboxManeuverApi;
+import com.mapbox.navigation.ui.maneuver.model.Maneuver;
+import com.mapbox.navigation.ui.maneuver.model.ManeuverError;
+import com.mapbox.navigation.ui.maneuver.view.MapboxManeuverView;
 import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider;
+import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowApi;
+import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowView;
+import com.mapbox.navigation.ui.maps.route.arrow.model.RouteArrowOptions;
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi;
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView;
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions;
@@ -87,8 +94,12 @@ import com.mapbox.navigation.ui.voice.model.SpeechError;
 import com.mapbox.navigation.ui.voice.model.SpeechValue;
 import com.mapbox.navigation.ui.voice.model.SpeechVolume;
 import com.mapbox.navigation.ui.voice.view.MapboxSoundButton;
+import com.mapbox.search.autocomplete.PlaceAutocomplete;
+import com.mapbox.search.autocomplete.PlaceAutocompleteSuggestion;
+import com.mapbox.search.ui.adapter.autocomplete.PlaceAutocompleteUiAdapter;
+import com.mapbox.search.ui.view.CommonSearchViewConfiguration;
+import com.mapbox.search.ui.view.SearchResultsView;
 
-import java.awt.font.NumericShaper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -96,29 +107,18 @@ import java.util.Locale;
 import java.util.Objects;
 
 import kotlin.Unit;
+import kotlin.coroutines.Continuation;
+import kotlin.coroutines.CoroutineContext;
+import kotlin.coroutines.EmptyCoroutineContext;
 import kotlin.jvm.functions.Function1;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.Button;
-import android.widget.ImageView;
-
-public class OptimalRoute extends AppCompatActivity  {
+public class OptimalRoute extends AppCompatActivity {
     MapView mapView;
-    Button Return, ZoomIn,ZoomOut;
     MaterialButton setRoute;
     FloatingActionButton focusLocationBtn;
-    Animation animation,animation2;
     private final NavigationLocationProvider navigationLocationProvider = new NavigationLocationProvider();
     private MapboxRouteLineView routeLineView;
     private MapboxRouteLineApi routeLineApi;
-
-
-
-
     private final LocationObserver locationObserver = new LocationObserver() {
         @Override
         public void onNewRawLocation(@NonNull Location location) {
@@ -132,7 +132,6 @@ public class OptimalRoute extends AppCompatActivity  {
             if (focusLocation) {
                 updateCamera(Point.fromLngLat(location.getLongitude(), location.getLatitude()), (double) location.getBearing());
             }
-
         }
     };
     private final RoutesObserver routesObserver = new RoutesObserver() {
@@ -143,7 +142,6 @@ public class OptimalRoute extends AppCompatActivity  {
                 public void accept(Expected<RouteLineError, RouteSetValue> routeLineErrorRouteSetValueExpected) {
                     Style style = mapView.getMapboxMap().getStyle();
                     if (style != null) {
-
                         routeLineView.renderRouteDrawData(style, routeLineErrorRouteSetValueExpected);
                     }
                 }
@@ -225,17 +223,53 @@ public class OptimalRoute extends AppCompatActivity  {
     };
 
     private boolean isVoiceInstructionsMuted = false;
+    private PlaceAutocomplete placeAutocomplete;
+    private SearchResultsView searchResultsView;
+    private PlaceAutocompleteUiAdapter placeAutocompleteUiAdapter;
+    private TextInputEditText searchET;
+    private boolean ignoreNextQueryUpdate = false;
+    private MapboxManeuverView mapboxManeuverView;
+    private MapboxManeuverApi maneuverApi;
+    private MapboxRouteArrowView routeArrowView;
+    private MapboxRouteArrowApi routeArrowApi = new MapboxRouteArrowApi();
+    private RouteProgressObserver routeProgressObserver = new RouteProgressObserver() {
+        @Override
+        public void onRouteProgressChanged(@NonNull RouteProgress routeProgress) {
+            Style style = mapView.getMapboxMap().getStyle();
+            if (style != null) {
+                routeArrowView.renderManeuverUpdate(style, routeArrowApi.addUpcomingManeuverArrow(routeProgress));
+            }
+
+            maneuverApi.getManeuvers(routeProgress).fold(new Expected.Transformer<ManeuverError, Object>() {
+                @NonNull
+                @Override
+                public Object invoke(@NonNull ManeuverError input) {
+                    return new Object();
+                }
+            }, new Expected.Transformer<List<Maneuver>, Object>() {
+                @NonNull
+                @Override
+                public Object invoke(@NonNull List<Maneuver> input) {
+                    mapboxManeuverView.setVisibility(View.VISIBLE);
+                    mapboxManeuverView.renderManeuvers(maneuverApi.getManeuvers(routeProgress));
+                    return new Object();
+                }
+            });
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //Mapbox.getInstance(this,R.string.mapbox_access_token);
         setContentView(R.layout.activity_optimal_route);
 
         mapView = findViewById(R.id.mapView);
         focusLocationBtn = findViewById(R.id.focusLocation);
         setRoute = findViewById(R.id.setRoute);
+        mapboxManeuverView = findViewById(R.id.maneuverView);
 
+        maneuverApi = new MapboxManeuverApi(new MapboxDistanceFormatter(new DistanceFormatterOptions.Builder(OptimalRoute.this).build()));
+        routeArrowView = new MapboxRouteArrowView(new RouteArrowOptions.Builder(OptimalRoute.this).build());
 
         MapboxRouteLineOptions options = new MapboxRouteLineOptions.Builder(this).withRouteLineResources(new RouteLineResources.Builder().build())
                 .withRouteLineBelowLayerId(LocationComponentConstants.LOCATION_INDICATOR_LAYER).build();
@@ -250,9 +284,55 @@ public class OptimalRoute extends AppCompatActivity  {
         MapboxNavigationApp.setup(navigationOptions);
         mapboxNavigation = new MapboxNavigation(navigationOptions);
 
+        mapboxNavigation.registerRouteProgressObserver(routeProgressObserver);
         mapboxNavigation.registerRoutesObserver(routesObserver);
         mapboxNavigation.registerLocationObserver(locationObserver);
         mapboxNavigation.registerVoiceInstructionsObserver(voiceInstructionsObserver);
+
+        placeAutocomplete = PlaceAutocomplete.create(getString(R.string.mapbox_access_token));
+        searchET = findViewById(R.id.searchET);
+
+        searchResultsView = findViewById(R.id.search_results_view);
+        searchResultsView.initialize(new SearchResultsView.Configuration(new CommonSearchViewConfiguration()));
+
+        placeAutocompleteUiAdapter = new PlaceAutocompleteUiAdapter(searchResultsView, placeAutocomplete, LocationEngineProvider.getBestLocationEngine(OptimalRoute.this));
+
+        searchET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (ignoreNextQueryUpdate) {
+                    ignoreNextQueryUpdate = false;
+                } else {
+                    placeAutocompleteUiAdapter.search(charSequence.toString(), new Continuation<Unit>() {
+                        @NonNull
+                        @Override
+                        public CoroutineContext getContext() {
+                            return EmptyCoroutineContext.INSTANCE;
+                        }
+
+                        @Override
+                        public void resumeWith(@NonNull Object o) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    searchResultsView.setVisibility(View.VISIBLE);
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
 
         MapboxSoundButton soundButton = findViewById(R.id.soundButton);
         soundButton.unmute();
@@ -315,16 +395,13 @@ public class OptimalRoute extends AppCompatActivity  {
                 PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
                 addOnMapClickListener(mapView.getMapboxMap(), new OnMapClickListener() {
 
+                    //ALL STATIONS STORED IN  THIS LIST
                     List<Point> destinationPoints = new ArrayList<>();
-
 
                     @Override
                     public boolean onMapClick(@NonNull Point point) {
                         destinationPoints.add(point);
 
-                        pointAnnotationManager.deleteAll();
-
-                        // Add annotations for all destination points
                         for (Point destPoint : destinationPoints) {
                             PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions()
                                     .withTextAnchor(TextAnchor.CENTER)
@@ -332,21 +409,21 @@ public class OptimalRoute extends AppCompatActivity  {
                                     .withPoint(destPoint);
                             pointAnnotationManager.create(pointAnnotationOptions);
                         }
+                        /*
+                        pointAnnotationManager.deleteAll();
+                        PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions().withTextAnchor(TextAnchor.CENTER).withIconImage(bitmap)
+                                .withPoint(point);
+                        pointAnnotationManager.create(pointAnnotationOptions);*/
 
-                        // Set route when the button is clicked
                         setRoute.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                //fetchRoute(destinationPoints.get(0), destinationPoints.get(destinationPoints.size() - 1));
-                                    fetchRoute(destinationPoints);
+                                //fetchRoute(point);
+                                fetchRoute(destinationPoints);
                             }
-
                         });
-
                         return true;
                     }
-
-
                 });
                 focusLocationBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -356,31 +433,52 @@ public class OptimalRoute extends AppCompatActivity  {
                         focusLocationBtn.hide();
                     }
                 });
+
+                placeAutocompleteUiAdapter.addSearchListener(new PlaceAutocompleteUiAdapter.SearchListener() {
+                    @Override
+                    public void onSuggestionsShown(@NonNull List<PlaceAutocompleteSuggestion> list) {
+
+                    }
+
+                    @Override
+                    public void onSuggestionSelected(@NonNull PlaceAutocompleteSuggestion placeAutocompleteSuggestion) {
+                        ignoreNextQueryUpdate = true;
+                        focusLocation = false;
+                        searchET.setText(placeAutocompleteSuggestion.getName());
+                        searchResultsView.setVisibility(View.GONE);
+
+                        pointAnnotationManager.deleteAll();
+                        PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions().withTextAnchor(TextAnchor.CENTER).withIconImage(bitmap)
+                                .withPoint(placeAutocompleteSuggestion.getCoordinate());
+                        pointAnnotationManager.create(pointAnnotationOptions);
+                        updateCamera(placeAutocompleteSuggestion.getCoordinate(), 0.0);
+
+                        setRoute.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                List<Point> searchedPoint=new ArrayList<>();
+                                searchedPoint.add(placeAutocompleteSuggestion.getCoordinate());
+                                fetchRoute(searchedPoint);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onPopulateQueryClick(@NonNull PlaceAutocompleteSuggestion placeAutocompleteSuggestion) {
+                        //queryEditText.setText(placeAutocompleteSuggestion.getName());
+                    }
+
+                    @Override
+                    public void onError(@NonNull Exception e) {
+
+                    }
+                });
             }
         });
-        Return=(Button)findViewById(R.id.Return);
-        Return.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(OptimalRoute.this, Dashboard.class);
-                startActivity(intent);
-                finish();
-                return;
-
-
-            }
-        });
-
     }
-
-
-
-
 
     @SuppressLint("MissingPermission")
     private void fetchRoute(List<Point> point) {
-
         LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(OptimalRoute.this);
         locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
             @Override
@@ -388,16 +486,13 @@ public class OptimalRoute extends AppCompatActivity  {
                 Location locations = result.getLastLocation();
                 setRoute.setEnabled(false);
                 setRoute.setText("Fetching route...");
-
                 RouteOptions.Builder builder = RouteOptions.builder();
-                //double walkingSpeed= 5;
-                Point origin = Point.fromLngLat(Objects.requireNonNull(locations.getLongitude()), locations.getLatitude());
-
+                Point origin = Point.fromLngLat(Objects.requireNonNull(locations).getLongitude(), locations.getLatitude());
 
                 List<Point> coord = new ArrayList<>();
-
                 coord.add(origin);
                 coord.addAll(point);
+
 
                 List<Bearing> bearings = new ArrayList<>();
                 for (int i = 0; i < coord.size(); i++) {
@@ -414,33 +509,34 @@ public class OptimalRoute extends AppCompatActivity  {
 
                 applyDefaultNavigationOptions(builder);
 
-
+                //builder.coordinatesList(Arrays.asList(origin, point));
+                //builder.alternatives(false);
+                //builder.profile(DirectionsCriteria.PROFILE_DRIVING);
+                //builder.bearingsList(Arrays.asList(Bearing.builder().angle(location.getBearing()).degrees(45.0).build(), null));
+                //applyDefaultNavigationOptions(builder);
 
                 mapboxNavigation.requestRoutes(builder.build(), new NavigationRouterCallback() {
-                                @Override
-                                public void onRoutesReady(@NonNull List<NavigationRoute> list, @NonNull RouterOrigin routerOrigin) {
-                                    mapboxNavigation.setNavigationRoutes(list);
-                                    focusLocationBtn.performClick();
-                                    setRoute.setEnabled(true);
-                                    setRoute.setText("Set route");
-                                }
+                    @Override
+                    public void onRoutesReady(@NonNull List<NavigationRoute> list, @NonNull RouterOrigin routerOrigin) {
+                        mapboxNavigation.setNavigationRoutes(list);
+                        focusLocationBtn.performClick();
+                        setRoute.setEnabled(true);
+                        setRoute.setText("Set route");
+                    }
 
-                                @Override
-                                public void onFailure(@NonNull List<RouterFailure> list, @NonNull RouteOptions routeOptions) {
-                                    setRoute.setEnabled(true);
-                                    setRoute.setText("Set route");
-                                    Toast.makeText(OptimalRoute.this, "Route request failed", Toast.LENGTH_SHORT).show();
-                                }
+                    @Override
+                    public void onFailure(@NonNull List<RouterFailure> list, @NonNull RouteOptions routeOptions) {
+                        setRoute.setEnabled(true);
+                        setRoute.setText("Set route");
+                        Toast.makeText(OptimalRoute.this, "Route request failed", Toast.LENGTH_SHORT).show();
+                    }
 
-                                @Override
-                                public void onCanceled(@NonNull RouteOptions routeOptions, @NonNull RouterOrigin routerOrigin) {
+                    @Override
+                    public void onCanceled(@NonNull RouteOptions routeOptions, @NonNull RouterOrigin routerOrigin) {
 
-                                }
-                            }
-                    );
-
-                }
-
+                    }
+                });
+            }
 
             @Override
             public void onFailure(@NonNull Exception exception) {
@@ -456,5 +552,4 @@ public class OptimalRoute extends AppCompatActivity  {
         mapboxNavigation.unregisterRoutesObserver(routesObserver);
         mapboxNavigation.unregisterLocationObserver(locationObserver);
     }
-
 }
