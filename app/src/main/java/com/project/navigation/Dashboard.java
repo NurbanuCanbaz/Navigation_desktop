@@ -12,19 +12,20 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.project.navigation.activities.ChatBoxMain;
+import com.project.navigation.activities.SignInActivity;
+
 //import com.google.android.gms.tasks.OnCompleteListener;
 //import com.google.android.gms.tasks.Task;
 
 public class Dashboard extends AppCompatActivity {
 
     private ImageView  Notification, LifeTime, OptimalRoute, ChatBot, CurrentLocation, Profile, Suggestion, HowTo;
-    private Button Return;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
-        Return = (Button) findViewById(R.id.Return);
         Notification = (ImageView) findViewById(R.id.Notification);
         LifeTime = (ImageView) findViewById(R.id.LifeTime);
         OptimalRoute = (ImageView) findViewById(R.id.OptimalRoute);
@@ -115,7 +116,7 @@ public class Dashboard extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Intent intentChat = new Intent(Dashboard.this, ChatBotSystemPage.class);
+                Intent intentChat = new Intent(Dashboard.this, ChatBoxMain.class);
                 startActivity(intentChat);
                 finish();
                 return;
@@ -153,18 +154,7 @@ public class Dashboard extends AppCompatActivity {
             }
         });
 
-        Return.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                Intent intentReturn = new Intent(Dashboard.this, LoginPage.class);
-                startActivity(intentReturn);
-                finish();
-                return;
-
-
-            }
-        });
 
 
 

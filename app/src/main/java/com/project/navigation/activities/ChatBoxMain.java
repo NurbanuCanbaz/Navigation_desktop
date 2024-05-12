@@ -15,7 +15,9 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.project.navigation.R;
 import com.project.navigation.adapters.RecentConversationsAdapter;
+import com.project.navigation.databinding.ActivityChatBoxMainBinding;
 import com.project.navigation.databinding.ActivityMainBinding;
 import com.project.navigation.listeners.ConversionListener;
 import com.project.navigation.models.ChatMessage;
@@ -30,16 +32,21 @@ import java.util.List;
 
 public class ChatBoxMain extends BaseActivity implements ConversionListener {
 
-    private ActivityMainBinding binding;
     private PreferenceManager preferenceManager;
     private List<ChatMessage> conversations;
     private RecentConversationsAdapter conversationsAdapter;
     private FirebaseFirestore database;
 
+
+
+    private ActivityChatBoxMainBinding binding;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+
+
+        binding = ActivityChatBoxMainBinding.inflate(getLayoutInflater());
+
         setContentView(binding.getRoot());
         preferenceManager = new PreferenceManager(getApplicationContext());
         init();
@@ -51,26 +58,26 @@ public class ChatBoxMain extends BaseActivity implements ConversionListener {
 
 
     private void init(){
-        /*
+
         conversations = new ArrayList<>();
         conversationsAdapter = new RecentConversationsAdapter(conversations, this);
         binding.conversationRecyclerView.setAdapter(conversationsAdapter);
-        database = FirebaseFirestore.getInstance();*/
+        database = FirebaseFirestore.getInstance();
     }
 
     private void setListeners(){
-        /*
+
         binding.imageSignOut.setOnClickListener(v -> signOut());
         binding.fabNewChat.setOnClickListener(v ->
-                startActivity(new Intent(getApplicationContext(), UsersActivity.class)));*/
+                startActivity(new Intent(getApplicationContext(), UsersActivity.class)));
     }
 
     private void loadUserDetails(){
-        /*
+
         binding.textName.setText(preferenceManager.getString(Constants.KEY_NAME));
         byte[] bytes = Base64.decode(preferenceManager.getString(Constants.KEY_IMAGE), Base64.DEFAULT);
         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-        binding.imageProfile.setImageBitmap(bitmap);*/
+        binding.imageProfile.setImageBitmap(bitmap);
     }
 
     private void showToast(String message){
@@ -125,9 +132,9 @@ public class ChatBoxMain extends BaseActivity implements ConversionListener {
             }
             Collections.sort(conversations, (obj1, obj2) -> obj2.dateObject.compareTo(obj1.dateObject));
             conversationsAdapter.notifyDataSetChanged();
-            //binding.conversationRecyclerView.smoothScrollToPosition(0);
-            //binding.conversationRecyclerView.setVisibility(View.VISIBLE);
-            //binding.progressBar.setVisibility(View.GONE);
+            binding.conversationRecyclerView.smoothScrollToPosition(0);
+            binding.conversationRecyclerView.setVisibility(View.VISIBLE);
+            binding.progressBar.setVisibility(View.GONE);
         }
     };
 
