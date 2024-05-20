@@ -4,7 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".OptimalRoute">
+    tools:context=".MatrixPage">
+
+
 
     <Button
         android:id="@+id/Return"
@@ -13,14 +15,20 @@
         android:layout_gravity="start|center"
         android:background="@drawable/arrow_back_24"
 
-         />
-
+        />
+    <TextView
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_marginLeft="110dp"
+        android:text="Optimal Route"
+        android:editable="false"
+        android:textSize="@dimen/_20sdp"
+        android:textStyle="bold"/>
 
 
     <com.mapbox.maps.MapView
-        android:layout_width="500dp"
-        android:layout_height="600dp"
-        android:layout_marginTop="200dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:id="@+id/mapView"/>
 
     <com.mapbox.navigation.ui.maneuver.view.MapboxManeuverView
@@ -59,7 +67,67 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="200dp"
+        >
+        <EditText
+            android:id="@+id/editTextOrigin"
+            android:layout_width="250dp"
+            android:layout_height="100dp"
+            android:hint="Origin"
+            android:inputType="text"
+            android:imeOptions="actionNext"/>
 
+        <!-- Destination EditText -->
+        <EditText
+            android:id="@+id/editTextDestination"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_below="@+id/editTextOrigin"
+            android:hint="Destination"
+            android:inputType="text"
+            android:imeOptions="actionDone"/>
+        <!-- Button to trigger Matrix API request -->
+        <Button
+            android:id="@+id/buttonCalculate"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="Calculate Distance"
+            android:layout_below="@+id/editTextDestination"
+            android:background="@drawable/baseline_add_24"/>
+
+        <TextView
+            android:id="@+id/currentTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="86dp"
+            android:layout_below="@+id/buttonCalculate"
+            android:text="Current Time:"
+            android:textSize="18sp"/>
+        <TextView
+            android:id="@+id/textViewResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_below="@+id/buttonCalculate"
+            android:text="Result:"
+            android:textSize="18sp"/>
+        <TextView
+            android:id="@+id/lngLnt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="116dp"
+            android:layout_below="@+id/buttonCalculate"
+            android:text="Longitude:"
+            android:textSize="18sp"/>
+
+    </RelativeLayout>
+
+
+
+    <!-- TextView to display Matrix API result -->
 
     <com.mapbox.navigation.ui.voice.view.MapboxSoundButton
         android:layout_width="wrap_content"

@@ -2,96 +2,98 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center">
+    tools:context=".HowToSystemPage"
+    android:background="#efe7da">
 
-
+    <!-- Return Button -->
     <Button
-        android:id="@+id/Return"
-        android:layout_width="130dp"
-        android:layout_height="55dp"
-        android:layout_gravity="center"
-        android:background="@drawable/rectangular_whitbackgraund"
-        android:backgroundTint="#674FA3"
-        android:drawableLeft="@drawable/arrow_back_24"
-        android:text="Return"
-        android:textAlignment="center"
-        android:textColor="#FFFFFF"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="16dp" />
-
-    <Button
-        android:id="@+id/button7"
-        android:layout_width="350dp"
-        android:layout_height="49dp"
-        android:background="@drawable/rectangular_greenbackgraund"
-        android:text="How to mark yourself as absent?"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="31dp"
-        tools:layout_editor_absoluteY="341dp" />
-
-    <Button
-        android:id="@+id/button6"
-        android:layout_width="350dp"
-        android:layout_height="49dp"
-        android:background="@drawable/rectangular_greenbackgraund"
-        android:text="How to change your address?"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.491"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteY="279dp" />
-
-    <Button
-        android:id="@+id/button5"
-        style="@style/Widget.AppCompat.Button.Small"
-        android:layout_width="350dp"
-        android:layout_height="49dp"
-        android:background="@drawable/rectangular_greenbackgraund"
-        android:text="How to Change your location?"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.508"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="212dp"
-        tools:ignore="MissingConstraints"
-        />
-
-    <Button
-        android:id="@+id/button8"
+        android:id="@+id/returnButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="#674FA3"
-        android:text="Home page"
-        app:layout_constraintHorizontal_bias="0.498"
+        android:src="@drawable/arrow_back_24"
+        app:backgroundTint="#88B29079"
+        app:tint="#FFFFFF"
         app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="805dp"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="46dp"
+        android:drawableLeft="@drawable/arrow_back_24"/>
 
-    <com.google.android.material.search.SearchView
-        android:id="@+id/search"
-        android:hint="search"
-        android:layout_width="409dp"
-        android:layout_height="32dp"
-        android:queryHint="Search"
-        android:background="@drawable/rectangular_graybackgraund"
-        tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="131dp"
-        tools:ignore="MissingConstraints"
-
-        />
+    <!-- "How To" Title -->
 
     <TextView
-        android:id="@+id/textView"
-        android:layout_width="147dp"
-        android:layout_height="47dp"
-        android:text="  How to"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="132dp"
-        tools:layout_editor_absoluteY="73dp" />
+        android:id="@+id/titleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="80dp"
+        android:text="How To"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toBottomOf="@id/returnButton"
+        app:layout_constraintStart_toEndOf="@id/returnButton"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.781" />
 
+    <!-- SearchView at the top -->
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/searchView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:iconifiedByDefault="false"
+        android:queryHint="Search from here"
+        android:background="@drawable/rectangular_graybackgraund"
+        android:backgroundTint="@color/light_gray"
+        app:layout_constraintTop_toBottomOf="@id/returnButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="76dp"
+       />
+
+
+    <Button
+        android:id="@+id/markAbsentButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Mark Yourself as Absent"
+        android:backgroundTint="#7B3F00"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/searchView"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Change Address Button -->
+    <Button
+        android:id="@+id/changeAddressButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#7B3F00"
+        android:text="Change Your Address"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/markAbsentButton"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Change Location Button -->
+    <Button
+        android:id="@+id/changeLocationButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#7B3F00"
+
+        android:text="Change Your Location"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/changeAddressButton"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

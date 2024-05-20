@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.firebase.firestore.DocumentChange;
@@ -15,6 +16,8 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.project.navigation.Dashboard;
+import com.project.navigation.ProfilePage;
 import com.project.navigation.R;
 import com.project.navigation.adapters.RecentConversationsAdapter;
 import com.project.navigation.databinding.ActivityChatBoxMainBinding;
@@ -37,6 +40,8 @@ public class ChatBoxMain extends BaseActivity implements ConversionListener {
     private RecentConversationsAdapter conversationsAdapter;
     private FirebaseFirestore database;
 
+    private Button Return;
+
 
 
     private ActivityChatBoxMainBinding binding;
@@ -49,6 +54,20 @@ public class ChatBoxMain extends BaseActivity implements ConversionListener {
 
         setContentView(binding.getRoot());
         preferenceManager = new PreferenceManager(getApplicationContext());
+        Return=(Button)findViewById(R.id.Return);
+
+        Return.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(ChatBoxMain.this, Dashboard.class);
+                startActivity(intent);
+                finish();
+                return;
+
+
+            }
+        });
         init();
         loadUserDetails();
         getToken();
@@ -67,7 +86,6 @@ public class ChatBoxMain extends BaseActivity implements ConversionListener {
 
     private void setListeners(){
 
-        binding.imageSignOut.setOnClickListener(v -> signOut());
         binding.fabNewChat.setOnClickListener(v ->
                 startActivity(new Intent(getApplicationContext(), UsersActivity.class)));
     }
@@ -77,7 +95,7 @@ public class ChatBoxMain extends BaseActivity implements ConversionListener {
         binding.textName.setText(preferenceManager.getString(Constants.KEY_NAME));
         byte[] bytes = Base64.decode(preferenceManager.getString(Constants.KEY_IMAGE), Base64.DEFAULT);
         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-        binding.imageProfile.setImageBitmap(bitmap);
+
     }
 
     private void showToast(String message){

@@ -6,6 +6,13 @@ import static com.mapbox.maps.plugin.gestures.GesturesUtils.getGestures;
 import static com.mapbox.maps.plugin.locationcomponent.LocationComponentUtils.getLocationComponent;
 import static com.mapbox.navigation.base.extensions.RouteOptionsExtensions.applyDefaultNavigationOptions;
 
+import static java.lang.Double.valueOf;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -17,8 +24,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
@@ -32,10 +42,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineProvider;
 import com.mapbox.android.core.location.LocationEngineResult;
+import com.mapbox.android.gestures.Constants;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.api.directions.v5.DirectionsCriteria;
 import com.mapbox.api.directions.v5.models.Bearing;
@@ -120,15 +134,27 @@ import kotlin.jvm.functions.Function1;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import java.util.Calendar;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import android.os.Handler;
 
-public class OptimalRoute extends AppCompatActivity {
+public class MatrixPage extends AppCompatActivity {
+    private DatabaseReference mDatabase;
+
     private FeatureCollection featureCollection;
+    private List<Point> userPoint = new ArrayList<>();
     private RecyclerView recyclerView;
     private List<Point> searchedPoint=new ArrayList<>();
     private List<Point> destinationPoints = new ArrayList<>();
 
+    private List<Point> coordinates = new ArrayList<>();
+    private Location previousLocation;
+    private double totalDistance;
+    private long previousUpdateTimeMillis;
 
 
+    private Double speed;
     MapView mapView;
     MaterialButton setRoute;
     FloatingActionButton focusLocationBtn;
@@ -136,10 +162,39 @@ public class OptimalRoute extends AppCompatActivity {
     private MapboxRouteLineView routeLineView;
     private MapboxRouteLineApi routeLineApi;
     private Button Return;
+
+    private TextView timeTextView;
+    private Handler handler = new Handler();
+    private Runnable runnable;
+
+
+    private Point origin = Point.fromLngLat( 39.983748, 32.816814);
+    private Point destination = Point.fromLngLat(40.056971, 32.646201);
     private final LocationObserver locationObserver = new LocationObserver() {
+
+
         @Override
         public void onNewRawLocation(@NonNull Location location) {
+            if (previousLocation != null) {
+                totalDistance += location.distanceTo(previousLocation);
+            }
+            previousLocation = location;
 
+            // Calculate current speed
+            long currentTimeMillis = System.currentTimeMillis();
+            long timeElapsedMillis = currentTimeMillis - previousUpdateTimeMillis;
+            double currentSpeed;
+            if (timeElapsedMillis > 0) {
+                currentSpeed = (location.distanceTo(previousLocation) / timeElapsedMillis) * 1000; // in meters per second
+            } else {
+                // If time elapsed is 0 or negative, set a default speed
+                currentSpeed = 30.0; // Default speed: 5 meters per second
+            }
+
+            // Update UI with current speed
+            updateSpeedUI(currentSpeed);
+
+            previousUpdateTimeMillis = currentTimeMillis;
         }
 
         @Override
@@ -150,7 +205,36 @@ public class OptimalRoute extends AppCompatActivity {
                 updateCamera(Point.fromLngLat(location.getLongitude(), location.getLatitude()), (double) location.getBearing());
             }
         }
+
+        private void updateSpeedUI(double currentSpeed) {
+
+            double averageSpeed = totalDistance / (System.currentTimeMillis() - previousUpdateTimeMillis);
+
+        }
     };
+
+    private double calculateCurrentSpeed(Location location) {
+        long currentTimeMillis = System.currentTimeMillis();
+        long timeElapsedMillis = currentTimeMillis - previousUpdateTimeMillis;
+        double currentSpeed;
+        if (timeElapsedMillis > 0) {
+            currentSpeed = (location.distanceTo(previousLocation) / timeElapsedMillis) * 1000; // in meters per second
+        } else {
+            // If time elapsed is 0 or negative, set a default speed
+            currentSpeed = 5.0; // Default speed: 5 meters per second
+        }
+        previousUpdateTimeMillis = currentTimeMillis;
+        return currentSpeed;
+    }
+
+    private String timeDisplay(){
+        Date currentTime = Calendar.getInstance().getTime();
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+        String formattedTime = timeFormat.format(currentTime);
+        return formattedTime;
+
+    }
+
     private final RoutesObserver routesObserver = new RoutesObserver() {
         @Override
         public void onRoutesChanged(@NonNull RoutesUpdatedResult routesUpdatedResult) {
@@ -196,7 +280,7 @@ public class OptimalRoute extends AppCompatActivity {
         @Override
         public void onActivityResult(Boolean result) {
             if (result) {
-                Toast.makeText(OptimalRoute.this, "Permission granted! Restart this app", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MatrixPage.this, "Permission granted! Restart this app", Toast.LENGTH_SHORT).show();
             }
         }
     });
@@ -240,6 +324,12 @@ public class OptimalRoute extends AppCompatActivity {
     };
 
     private boolean isVoiceInstructionsMuted = false;
+    private EditText editTextOrigin;
+    private EditText editTextDestination;
+    private Button buttonCalculate;
+    private TextView textViewResult,lngLt;
+    private TextView timeCurrentResult;
+
     private PlaceAutocomplete placeAutocomplete;
     private SearchResultsView searchResultsView;
     private PlaceAutocompleteUiAdapter placeAutocompleteUiAdapter;
@@ -279,7 +369,7 @@ public class OptimalRoute extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_optimal_route);
+        setContentView(R.layout.activity_matrix_page);
 
 
         mapView = findViewById(R.id.mapView);
@@ -288,17 +378,16 @@ public class OptimalRoute extends AppCompatActivity {
         mapboxManeuverView = findViewById(R.id.maneuverView);
         Return = (Button)findViewById(R.id.Return);
 
-
-        maneuverApi = new MapboxManeuverApi(new MapboxDistanceFormatter(new DistanceFormatterOptions.Builder(OptimalRoute.this).build()));
-        routeArrowView = new MapboxRouteArrowView(new RouteArrowOptions.Builder(OptimalRoute.this).build());
+        maneuverApi = new MapboxManeuverApi(new MapboxDistanceFormatter(new DistanceFormatterOptions.Builder(MatrixPage.this).build()));
+        routeArrowView = new MapboxRouteArrowView(new RouteArrowOptions.Builder(MatrixPage.this).build());
 
         MapboxRouteLineOptions options = new MapboxRouteLineOptions.Builder(this).withRouteLineResources(new RouteLineResources.Builder().build())
                 .withRouteLineBelowLayerId(LocationComponentConstants.LOCATION_INDICATOR_LAYER).build();
         routeLineView = new MapboxRouteLineView(options);
         routeLineApi = new MapboxRouteLineApi(options);
 
-        speechApi = new MapboxSpeechApi(OptimalRoute.this, getString(R.string.mapbox_access_token), Locale.US.toLanguageTag());
-        mapboxVoiceInstructionsPlayer = new MapboxVoiceInstructionsPlayer(OptimalRoute.this, Locale.US.toLanguageTag());
+        speechApi = new MapboxSpeechApi(MatrixPage.this, getString(R.string.mapbox_access_token), Locale.US.toLanguageTag());
+        mapboxVoiceInstructionsPlayer = new MapboxVoiceInstructionsPlayer(MatrixPage.this, Locale.US.toLanguageTag());
 
         NavigationOptions navigationOptions = new NavigationOptions.Builder(this).accessToken(getString(R.string.mapbox_access_token)).build();
 
@@ -316,17 +405,96 @@ public class OptimalRoute extends AppCompatActivity {
         searchResultsView = findViewById(R.id.search_results_view);
         searchResultsView.initialize(new SearchResultsView.Configuration(new CommonSearchViewConfiguration()));
 
-        placeAutocompleteUiAdapter = new PlaceAutocompleteUiAdapter(searchResultsView, placeAutocomplete, LocationEngineProvider.getBestLocationEngine(OptimalRoute.this));
+        placeAutocompleteUiAdapter = new PlaceAutocompleteUiAdapter(searchResultsView, placeAutocomplete, LocationEngineProvider.getBestLocationEngine(MatrixPage.this));
+
+
+        //Access user location from firebase:
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        // Replace "userId123" with the actual user ID
+
+        editTextOrigin = findViewById(R.id.editTextOrigin);
+        editTextDestination = findViewById(R.id.editTextDestination);
+        buttonCalculate = findViewById(R.id.buttonCalculate);
+        textViewResult = findViewById(R.id.textViewResult);
+        lngLt = findViewById(R.id.lngLnt);
+        timeCurrentResult=findViewById(R.id.currentTime);
+
+        //timeCurrentResult.setText("Time: " +  timeDisplay());
 
 
 
+        // Read latitude and longitude from the database
+        mDatabase.child("userAddresses").addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                            String userId = userSnapshot.getKey(); // Get the user ID
+                            Double latitude = userSnapshot.child("latitude").getValue(Double.class);
+                            Double longitude = userSnapshot.child("longitude").getValue(Double.class);
+
+
+                            if (latitude != null && longitude != null) {
+                                //System.out.println("Latitude:"+latitude);
+                                lngLt.setText("User ıd:"+ userId+"Latitude: " + latitude + ", Longitude: " + longitude);
+                            } else {
+                                Log.d("MainActivity", "Latitude or Longitude is null for User ID: " + userId);
+                            }
+                        }
+                    }
+
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Log.w("MatrixPage", "Failed to read value.", databaseError.toException());
+                    }
+                }
+        );
+
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                // Get the current time
+                Date now = new Date();
+                // Format the current time
+                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+                String formattedTime = timeFormat.format(now);
+                // Update the TextView
+                timeCurrentResult.setText(formattedTime);
+                // Re-run the runnable every second
+                handler.postDelayed(this, 1000);
+            }
+        };
+
+        // Start the runnable for the first time
+        handler.post(runnable);
+
+        // Create a list of origin and destination points
+        coordinates.add(origin);
+        coordinates.add(destination);
+        /*
+        for(int i = 0 ; i<destinationPoints.size(); i++){
+            coordinates.add(destinationPoints.get(i));
+        }*/
+
+
+        buttonCalculate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                calculateDistance(coordinates.get(0), coordinates.get(1));
+
+            }
+        });
 
 
         Return.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                Intent intent = new Intent(OptimalRoute.this, Dashboard.class);
+                Intent intent = new Intent(MatrixPage.this, Dashboard.class);
                 startActivity(intent);
                 finish();
                 return;
@@ -389,13 +557,13 @@ public class OptimalRoute extends AppCompatActivity {
         });
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(OptimalRoute.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(MatrixPage.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
             }
         }
 
-        if (ActivityCompat.checkSelfPermission(OptimalRoute.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(OptimalRoute.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(MatrixPage.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(MatrixPage.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             activityResultLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
             activityResultLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION);
         } else {
@@ -409,7 +577,7 @@ public class OptimalRoute extends AppCompatActivity {
         setRoute.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(OptimalRoute.this, "Please select a location in map", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MatrixPage.this, "Please select a location in map", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -517,9 +685,68 @@ public class OptimalRoute extends AppCompatActivity {
         });
     }
 
+
+
+
+
+
+    private void calculateDistance(Point origin, Point destination) {
+        String accessToken = "sk.eyJ1IjoibnVyYmFudWNhbmJheiIsImEiOiJjbHc2NGhuOWUxbDlqMmpwZHB6MThrM2M3In0.f5ZKapBICS8qsCX4S3IDJg";
+        List<Point> pairPoints= new ArrayList<>();
+        pairPoints.add(origin);
+        pairPoints.add(destination);
+        // Make a request to the Mapbox Matrix API
+        MapboxMatrix mapboxMatrix = MapboxMatrix.builder()
+                .accessToken(accessToken)
+                .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
+                .coordinates(pairPoints)
+                .build();
+        mapboxMatrix.enqueueCall(new Callback<MatrixResponse>() {
+            @Override
+            public void onResponse(Call<MatrixResponse> call, Response<MatrixResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    MatrixResponse matrixResponse = response.body();
+                    Log.e("MatrixAPI", "Response Body: " + response.body().toString());
+                    // Check if destinations and durations are not null and not empty
+                    if (matrixResponse.destinations() != null && !matrixResponse.destinations().isEmpty() &&
+                            matrixResponse.durations() != null && !matrixResponse.durations().isEmpty()) {
+
+                        // Assuming only one pair of points is requested
+                        double distance = (matrixResponse.destinations().get(1).distance())/1000;
+                        //double durationInSeconds = matrixResponse.durations().get(0)[0];
+
+                        Location location = new Location("point_to_location");
+                        location.setLatitude(origin.latitude());
+                        location.setLongitude(origin.longitude());
+                        //speed=calculateCurrentSpeed(location)*3.6;
+                        speed=5.0;
+                        Double time=(distance/speed)*60000.0;;
+
+                        textViewResult.setText("Distance: " + distance + " km\nDuration: " + time +"h" );
+
+                    } else {
+                        // Display a message if destinations or durations are empty
+                        Toast.makeText(MatrixPage.this, "Empty response for destinations or durations", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    // Log the error message if the response is not successful
+                    Log.e("MatrixAPI", "Failed to get a successful response. Error message: " + response.message());
+                    // Display a message if the response is not successful
+                    Toast.makeText(MatrixPage.this, "Failed to get a successful response", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<MatrixResponse> call, Throwable t) {
+                Toast.makeText(MatrixPage.this, "Failed to calculate distance: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     @SuppressLint("MissingPermission")
     private void fetchRoute(List<Point> point) {
-        LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(OptimalRoute.this);
+        LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(MatrixPage.this);
         locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
             @Override
             public void onSuccess(LocationEngineResult result) {
@@ -549,12 +776,6 @@ public class OptimalRoute extends AppCompatActivity {
 
                 applyDefaultNavigationOptions(builder);
 
-                //builder.coordinatesList(Arrays.asList(origin, point));
-                //builder.alternatives(false);
-                //builder.profile(DirectionsCriteria.PROFILE_DRIVING);
-                //builder.bearingsList(Arrays.asList(Bearing.builder().angle(location.getBearing()).degrees(45.0).build(), null));
-                //applyDefaultNavigationOptions(builder);
-
                 mapboxNavigation.requestRoutes(builder.build(), new NavigationRouterCallback() {
                     @Override
                     public void onRoutesReady(@NonNull List<NavigationRoute> list, @NonNull RouterOrigin routerOrigin) {
@@ -568,7 +789,7 @@ public class OptimalRoute extends AppCompatActivity {
                     public void onFailure(@NonNull List<RouterFailure> list, @NonNull RouteOptions routeOptions) {
                         setRoute.setEnabled(true);
                         setRoute.setText("Set route");
-                        Toast.makeText(OptimalRoute.this, "Route request failed", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MatrixPage.this, "Route request failed", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override

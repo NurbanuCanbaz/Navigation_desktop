@@ -4,28 +4,63 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.MainActivity">
+    tools:context=".activities.MainActivity"
+    android:background="#efe7da">
 
 
-    <Button
-        android:id="@+id/Dashboard"
-        android:layout_width="140dp"
+    <TextView
+        android:id="@+id/RouteMApp"
+        android:layout_width="500dp"
         android:layout_height="140dp"
-        android:text="Dashboard"
-        android:layout_marginTop="200dp"
-        android:layout_marginLeft="100dp"
- />
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="580dp"
+        android:text="RouteMApp"
+        android:textAlignment="center"
+        android:editable="false"
+        android:background="@drawable/rounded_textview"
+        android:textSize="50dp" />
 
-    <Button
-        android:id="@+id/Return"
-        android:layout_width="224dp"
-        android:layout_height="197dp"
-        android:layout_marginLeft="100dp"
-        android:layout_marginTop="400dp"
-        android:background="@drawable/arrow_back_24"
-        android:text="Return"
+    <com.airbnb.lottie.LottieAnimationView
 
+        android:id="@+id/lottie"
+        android:layout_width="500dp"
+        android:layout_height="250dp"
+        android:layout_centerInParent="true"
+        android:elevation="5dp"
+        app:lottie_autoPlay="true"
+        app:lottie_rawRes="@raw/animation" />
 
+    <com.airbnb.lottie.LottieAnimationView
+
+        android:id="@+id/lottie2"
+        android:layout_width="500dp"
+        android:layout_height="300dp"
+        android:layout_below="@+id/lottie"
+        android:layout_centerVertical="true"
+        android:elevation="5dp"
+        app:lottie_autoPlay="true"
+        app:lottie_rawRes="@raw/anim2" />
+    <!--
+        <Button
+            android:id="@+id/Dashboard"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="Dashboard"
+            android:layout_marginTop="3300dp"
+            android:layout_marginLeft="100dp"
         />
 
-</RelativeLayout>
+        <Button
+            android:id="@+id/Return"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginLeft="100dp"
+            android:layout_marginTop="4300dp"
+            android:background="@drawable/arrow_back_24"
+            android:text="Return"
+
+
+            />-->
+
+    </RelativeLayout>
