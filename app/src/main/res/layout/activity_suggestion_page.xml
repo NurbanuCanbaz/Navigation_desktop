@@ -1,153 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SuggestionPage">
+    tools:context="com.project.navigation.SuggestionPage"
+    android:background="#efe7da"
+    android:scrollbarSize="15dp"
+    android:scrollbarTrackVertical="@drawable/scrollview_track"
+    android:scrollbarThumbVertical="@drawable/scrollview"
+    >
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#efe7da">
 
-
+    <!-- Return Button -->
     <Button
-        android:id="@+id/Return"
-        android:layout_width="130dp"
-        android:layout_height="55dp"
+        android:id="@+id/returnButton"
+        android:layout_width="68dp"
+        android:layout_height="48dp"
         android:layout_gravity="start|center"
-        android:layout_marginBottom="1dp"
-        android:background="@drawable/rectangular_whitbackgraund"
-        android:backgroundTint="#674FA3"
+        android:layout_marginLeft="10dp"
+        android:backgroundTint="#88B29079"
         android:drawableLeft="@drawable/arrow_back_24"
-        android:text="Return"
         android:textAlignment="center"
-        android:textColor="#FFFFFF"
-         />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="240dp"
-        android:layout_height="47dp"
-        android:layout_marginStart="150sp"
-        android:layout_marginLeft="@dimen/mapbox_recenterButton_minExtendedWidth"
-        android:layout_marginEnd="10sp"
-        android:layout_marginBottom="100sp"
-        android:text="Suggestion"
-        android:textAlignment="center"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="92dp"
-        tools:layout_editor_absoluteY="68dp" />
-
-    <EditText
-        android:id="@+id/platetext"
-        android:layout_width="200dp"
-        android:layout_height="48dp"
-        android:background="@drawable/rectangular_greenbackgraund"
-        android:ems="10"
-        android:layout_marginTop="100sp"
-        android:layout_marginLeft="30sp"
-        android:inputType="text"
-        android:text="Vehicles Plate Number"
-        android:textAlignment="center"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="35dp"
-
-        tools:layout_editor_absoluteY="136dp" />
-    <EditText
-        android:id="@+id/name_text"
-        android:layout_width="200dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="150sp"
-        android:layout_marginLeft="30sp"
-        android:background="#EFEFEF"
-        android:ems="10"
-        android:inputType="text"
-        android:text="Type Here"
-        android:textSize="16dp"
-        android:textAlignment="center"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="35dp"
-        tools:layout_editor_absoluteY="280dp" />
-
-    <EditText
-        android:id="@+id/editTextText2"
-        android:layout_width="200dp"
-        android:layout_marginTop="210sp"
-        android:layout_height="48dp"
-        android:layout_marginLeft="30sp"
-        android:background="@drawable/rectangular_greenbackgraund"
-        android:ems="10"
-        android:inputType="text"
-        android:text="Name/Surname"
-        android:textAlignment="center"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="35dp"
-        tools:layout_editor_absoluteY="232dp" />
-    <EditText
-        android:id="@+id/editTextText3"
-        android:layout_width="200dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="260sp"
-        android:background="#EFEFEF"
-        android:ems="10"
-        android:layout_marginLeft="30sp"
-        android:inputType="text"
-        android:text="Type Here"
-        android:textAlignment="center"
-        android:textSize="16dp"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="35dp"
-        tools:layout_editor_absoluteY="184dp" />
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="200dp"
-        android:layout_height="48dp"
-        android:background="@drawable/rectangular_greenbackgraund"
-        android:ems="10"
-        android:layout_marginTop="330sp"
-        android:layout_marginLeft="30sp"
-        android:textColor="@color/black"
-        android:inputType="text"
-        android:text="Issue Details"
-        android:textAlignment="center"
-        android:textSize="20dp"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="35dp"
-        tools:layout_editor_absoluteY="347dp"
-
+        android:layout_marginTop="60dp"
         />
 
+    <!-- Title -->
+    <TextView
+        android:id="@+id/titleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="Suggestion/Issue"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
+    <!-- Name/Surname Label -->
+    <TextView
+        android:id="@+id/nameLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/titleTextView"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="126dp"
+        android:text="Name/Surname:"
+        android:editable="false"
+        android:textSize="18sp" />
+
+    <!-- Name/Surname EditText -->
     <EditText
-        android:id="@+id/typesuggestion"
-        android:layout_width="356dp"
-        android:layout_height="253dp"
-        android:layout_marginTop="400sp"
-        android:layout_marginLeft="30sp"
-        android:background="#EFEFEF"
-        android:text="Type Here"
+        android:id="@+id/nameEditText"
+        android:layout_width="350dp"
+        android:layout_height="50dp"
+        android:layout_below="@id/nameLabel"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
         android:textAlignment="center"
-        android:textColorHint="@color/black"
-        android:textSize="16dp"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="35dp"
-        tools:layout_editor_absoluteY="395dp"
+        android:background="@drawable/rectangular_graybackgraund"
+        android:hint="Enter Service Driver's Name/Surname"
+        android:inputType="textPersonName" />
 
-        />
+    <!-- Vehicle Plate Number Label -->
+    <TextView
+        android:id="@+id/plateNumberLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/nameEditText"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Vehicle Plate Number:"
+        android:editable="false"
+        android:textSize="18sp" />
 
+    <!-- Vehicle Plate Number EditText -->
+    <EditText
+        android:id="@+id/plateNumberEditText"
+        android:layout_width="350dp"
+        android:layout_height="50dp"
+        android:layout_below="@id/plateNumberLabel"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:textAlignment="center"
+        android:background="@drawable/rectangular_graybackgraund"
+        android:layout_marginEnd="16dp"
+        android:hint="Enter Vehicle Plate Number"
+        android:inputType="text" />
 
+    <!-- Suggestion/Issue Label -->
+    <TextView
+        android:id="@+id/suggestionLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/plateNumberEditText"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Suggestion/Issue:"
+        android:editable="false"
+        android:textSize="18sp" />
+
+    <!-- Suggestion/Issue EditText -->
+    <EditText
+        android:id="@+id/suggestionEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/suggestionLabel"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:textAlignment="center"
+        android:hint="Enter your Suggestion/Issue"
+        android:background="@drawable/rectangular_graybackgraund"
+        android:inputType="textMultiLine"
+        android:minLines="5" />
+
+    <!-- Submit Button -->
     <Button
-        android:id="@+id/button2"
-        android:layout_width="106dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="660sp"
-        android:background="@drawable/rectangular_purplebackgraund"
-        android:text="Submit"
-        android:layout_marginLeft="30sp"
-
-        android:textAlignment="center"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="272dp"
-        tools:layout_editor_absoluteY="676dp" />
-
-
+        android:id="@+id/submitButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/suggestionEditText"
+        android:backgroundTint="#6E260E"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp"
+        android:text="Submit" />
 
 </RelativeLayout>
+</ScrollView>

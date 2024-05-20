@@ -21,6 +21,7 @@ import com.project.navigation.activities.SignInActivity;
 public class Dashboard extends AppCompatActivity {
 
     private ImageView  Notification, LifeTime, OptimalRoute, ChatBot, CurrentLocation, Profile, Suggestion, HowTo;
+    private Button Matrix;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +35,7 @@ public class Dashboard extends AppCompatActivity {
         Profile = (ImageView) findViewById(R.id.Profile);
         Suggestion = (ImageView) findViewById(R.id.Suggestion);
         HowTo = (ImageView) findViewById(R.id.HowTo);
+        Matrix = (Button) findViewById(R.id.Matrix);
 
 
         OptimalRoute.setOnClickListener(new View.OnClickListener() {
@@ -41,6 +43,32 @@ public class Dashboard extends AppCompatActivity {
             public void onClick(View view) {
 
                 Intent intentOptimalRoute = new Intent(Dashboard.this, OptimalRoute.class);
+                startActivity(intentOptimalRoute);
+                finish();
+                return;
+
+
+            }
+        });
+
+        Suggestion.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intentOptimalRoute = new Intent(Dashboard.this, SuggestionPage.class);
+                startActivity(intentOptimalRoute);
+                finish();
+                return;
+
+
+            }
+        });
+
+        Matrix.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intentOptimalRoute = new Intent(Dashboard.this, MatrixPage.class);
                 startActivity(intentOptimalRoute);
                 finish();
                 return;

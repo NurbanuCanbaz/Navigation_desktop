@@ -1,9 +1,69 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<!-- activity_attendance.xml -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AttendencePage">
+    tools:context=".AttendencePage"
+    android:background="#efe7da">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <LinearLayout
+        android:layout_width="500dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/Return"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|center"
+            android:layout_marginLeft="10dp"
+            android:backgroundTint="#88B29079"
+            android:drawableLeft="@drawable/arrow_back_24"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:textSize="40px" />
+
+        <TextView
+            android:layout_width="240dp"
+            android:layout_height="match_parent"
+            android:backgroundTint="#EFEFEF"
+            android:gravity="center"
+            android:text="Attendance"
+            android:textColor="#000000"
+            android:textSize="60px" />
+
+    </LinearLayout>
+
+
+    <!-- CalendarView for selecting desired days -->
+    <CalendarView
+        android:id="@+id/calendarView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="114dp" />
+
+    <!-- CheckBox for "Absent" option -->
+    <CheckBox
+        android:id="@+id/checkBoxAbsent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mark as Absent"
+        android:layout_below="@id/calendarView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp" />
+
+    <!-- Button to confirm changes -->
+    <Button
+        android:id="@+id/btnConfirmChanges"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Confirm Changes"
+        android:backgroundTint="#88B29079"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="44dp" />
+
+</RelativeLayout>

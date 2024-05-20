@@ -48,17 +48,17 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'com.google.firebase:firebase-messaging:24.0.0'
-    implementation 'com.google.firebase:firebase-firestore:25.0.0'
+
+    // implementation 'com.google.firebase:firebase-auth:23.0.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     //mapbox dependencies
-    implementation 'com.mapbox.navigation:android:2.19.0'
-    //implementation 'com.mapbox.navigation:navigation-ui:1.0.0'
+    implementation ('com.mapbox.navigation:android:2.19.0')
 
-    //implementation 'com.mapox.navigatioon.ui.manuever'
+
+
 
 
 
@@ -69,11 +69,26 @@ dependencies {
     //Rounded ImageView
     implementation 'com.makeramen:roundedimageview:2.3.0'
 
+    /*
     //Firebase Dependencies
     implementation platform('com.google.firebase:firebase-bom:32.7.2')
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-messaging:23.4.1'
     implementation 'com.google.firebase:firebase-firestore:24.10.2'
+    implementation 'com.google.firebase:firebase-database:21.0.0'*/
+
+
+
+    // Use Firebase BoM
+    implementation platform('com.google.firebase:firebase-bom:32.7.2')
+
+// Firebase dependencies without specific versions
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-messaging'
+    implementation 'com.google.firebase:firebase-firestore'
+    implementation 'com.google.firebase:firebase-database'
+
+
 
     // MultiDex enable
     implementation 'androidx.multidex:multidex:2.0.1'
@@ -88,6 +103,11 @@ dependencies {
 
 
     implementation "com.mapbox.search:mapbox-search-android-ui:1.0.0-rc.6"
+
+    //implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:9.7.1'
+    implementation 'com.airbnb.android:lottie-compose:6.0.0'
+
+
 
 
 }

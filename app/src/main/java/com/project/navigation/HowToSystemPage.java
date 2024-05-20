@@ -1,50 +1,44 @@
 package com.project.navigation;
 
-
-
-import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.SearchView;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class HowToSystemPage extends AppCompatActivity {
-    private Button HowToReturn;
+
+    private List<Button> buttons;
+    private Button Return;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_how_to_system_page);
 
-        // Access button elements
-        HowToReturn=(Button) findViewById(R.id.Return);
-        Button button5 = findViewById(R.id.button5);
-        Button button8 = findViewById(R.id.button8);
-        SearchView searchView = findViewById(R.id.search);
+        // Initialize buttons
+        Button returnButton = findViewById(R.id.returnButton);
+        Button markAbsentButton = findViewById(R.id.markAbsentButton);
+        Button changeAddressButton = findViewById(R.id.changeAddressButton);
+        Button changeLocationButton = findViewById(R.id.changeLocationButton);
 
-        // Set video URLs (if applicable)
-        String videoUrl1 = "https://www.youtube.com/watch?v=cIfrH0svpZc";
+        // Add buttons to the list for easy access during search
+        buttons = new ArrayList<>();
+        buttons.add(markAbsentButton);
+        buttons.add(changeAddressButton);
+        buttons.add(changeLocationButton);
 
-        // Implement click listeners
-        button5.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl1));
-                startActivity(intent);
-            }
-        });
+        // Set click listeners for each button
+        Return = (Button) findViewById(R.id.returnButton);
 
-        // Repeat the same pattern for button6 and button7 (if opening videos)
-
-        button8.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Implement navigation to Home Page
-                // (Replace with your Home Page navigation logic)
-            }
-        });
-        HowToReturn.setOnClickListener(new View.OnClickListener() {
+        Return.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
@@ -57,19 +51,51 @@ public class HowToSystemPage extends AppCompatActivity {
             }
         });
 
-        // Implement search functionality (replace with your logic)
+        markAbsentButton.setOnClickListener(v -> openYouTubeVideo("https://youtu.be/XaF42xeAjXg?si=QvoP4lYo0INTHyOm"));
+        changeAddressButton.setOnClickListener(v -> openYouTubeVideo("https://www.youtube.com/watch?v=c3TVR54YxQ8&list=RDc3TVR54YxQ8&start_radio=1"));
+        changeLocationButton.setOnClickListener(v -> openYouTubeVideo("https://youtu.be/TaktufqaSgY?si=Pr-vCuawz6SgOLob"));
+
+        // Initialize and set up SearchView
+        SearchView searchView = findViewById(R.id.searchView);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                // Perform search based on query
-                return true;
+                filterButtons(query);
+                return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                // Handle search text changes
-                return true;
+                filterButtons(newText);
+                return false;
             }
         });
+
+        // Set up the title TextView
+        TextView titleTextView = findViewById(R.id.titleTextView);
+        titleTextView.setText("How To");
     }
+
+    // Method to open a YouTube video based on its URL
+    private void openYouTubeVideo(String videoUrl) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl));
+        intent.putExtra("force_fullscreen", true); // Optional: force full screen mode
+        startActivity(intent);
+    }
+
+
+    private void filterButtons(String query) {
+        for (Button button : buttons) {
+            if (button.getText().toString().toLowerCase().contains(query.toLowerCase())) {
+                button.setVisibility(View.VISIBLE);
+                System.out.println("Button '" + button.getText().toString() + "' is visible");
+            } else {
+                button.setVisibility(View.GONE);
+                System.out.println("Button '" + button.getText().toString() + "' is hidden");
+            }
+        }
+    }
+
+
+
 }

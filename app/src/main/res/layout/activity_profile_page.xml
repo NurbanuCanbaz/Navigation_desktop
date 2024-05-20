@@ -7,24 +7,24 @@
     tools:context="com.project.navigation.ProfilePage"
     android:orientation="vertical"
     android:gravity="center_vertical|center_horizontal"
-    android:background="#71C3AE"
+    android:background="#efe7da"
     >
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|left"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginTop="40dp">
 
         <Button
             android:id="@+id/Return"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start|center"
-            android:background="@drawable/rectangular_whitbackgraund"
-            android:backgroundTint="#5E9987"
+            android:layout_marginLeft="10dp"
+            android:backgroundTint="#88B29079"
             android:drawableLeft="@drawable/arrow_back_24"
-            android:text="Return"
             android:textAlignment="center"
             android:textColor="#FFFFFF"
             android:textSize="40px" />
@@ -40,6 +40,7 @@
 
     </LinearLayout>
 
+
     <LinearLayout
         android:layout_width="384dp"
         android:layout_height="wrap_content"
@@ -48,44 +49,37 @@
         android:layout_marginTop="70dp"
         >
 
-
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="116dp"
-            android:layout_height="87dp"
-            app:srcCompat="@drawable/baseline_account_circle_24" />
-
-        <EditText
-            android:id="@+id/Name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:backgroundTint="#EFEFEF"
-            android:text="Name"
-            android:textColor="#000000"
-            android:textSize="60px" />
-
-        <EditText
-            android:id="@+id/SurName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:backgroundTint="#EFEFEF"
-            android:text="Surname"
-            android:textColor="#000000"
-            android:textSize="60px" />
+        <com.makeramen.roundedimageview.RoundedImageView
+            android:id="@+id/imageProfile"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginLeft="@dimen/_16sdp"
+            android:background="@drawable/background_icon"
+            android:scaleType="centerCrop"
+            app:riv_corner_radius="@dimen/_8sdp" />
+        <TextView
+            android:id="@+id/textName"
+            android:layout_width="300dp"
+            android:layout_height="50dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="#5c0017"
+            android:textSize="@dimen/_14ssp"
+            android:textStyle="bold"
+             />
 
 
     </LinearLayout>
 
     <Button
 
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="20dp"
         android:id="@+id/Attendence"
         android:layout_width="250dp"
         android:layout_height="60dp"
         android:backgroundTint="#EFEFEF"
-        android:text="Attendence"
+        android:text="Attendance"
         android:textColor="#000000"
         android:drawableLeft="@drawable/baseline_alarm_on_24"
         />
@@ -96,7 +90,7 @@
         android:layout_width="250dp"
         android:layout_height="60dp"
         android:backgroundTint="#EFEFEF"
-        android:text="Change Address"
+        android:text="Address"
         android:textColor="#000000"
         android:drawableLeft="@drawable/baseline_location_off_24"
         />
@@ -117,12 +111,26 @@
         android:layout_width="150dp"
         android:layout_height="50dp"
         android:layout_marginLeft="135px"
-        android:backgroundTint="#5E9987"
         android:text="Edit Profile"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="30dp"
         android:layout_marginBottom="150dp"
-        android:background="@drawable/rectangular_whitbackgraund"
-        android:textColor="#FFFFFF" />
+        android:backgroundTint="#6E260E"/>
+
+
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/imageSignOut"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="@dimen/_16sdp"
+        android:layout_marginRight="@dimen/_16sdp"
+        android:background="@drawable/background_icon"
+        android:padding="@dimen/_6sdp"
+        android:src="@drawable/ic_logout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:tint="#88B29079" />
+
 
 
 </LinearLayout>
