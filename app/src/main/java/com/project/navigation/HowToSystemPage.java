@@ -96,6 +96,12 @@ public class HowToSystemPage extends AppCompatActivity {
         }
     }
 
-
+    @Override
+    public void onBackPressed() {
+        // do something on back.
+        super.onBackPressed();
+        startActivity(new Intent(HowToSystemPage.this, Dashboard.class));
+        return;
+    }
 
 }

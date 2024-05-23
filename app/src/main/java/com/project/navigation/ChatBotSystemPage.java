@@ -29,4 +29,11 @@ public class ChatBotSystemPage extends AppCompatActivity {
             }
         });
     }
+    @Override
+    public void onBackPressed() {
+        // do something on back.
+        super.onBackPressed();
+        startActivity(new Intent(ChatBotSystemPage.this, Dashboard.class));
+        return;
+    }
 }

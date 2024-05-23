@@ -8,15 +8,21 @@ import static com.mapbox.navigation.base.extensions.RouteOptionsExtensions.apply
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
@@ -37,6 +43,8 @@ import com.mapbox.api.directions.v5.DirectionsCriteria;
 import com.mapbox.api.directions.v5.models.Bearing;
 import com.mapbox.api.directions.v5.models.RouteOptions;
 import com.mapbox.api.directions.v5.models.VoiceInstructions;
+import com.mapbox.api.matrix.v1.MapboxMatrix;
+import com.mapbox.api.matrix.v1.models.MatrixResponse;
 import com.mapbox.bindgen.Expected;
 import com.mapbox.geojson.Point;
 import com.mapbox.maps.CameraOptions;
@@ -83,6 +91,7 @@ import com.mapbox.navigation.ui.voice.model.SpeechValue;
 import com.mapbox.navigation.ui.voice.model.SpeechVolume;
 import com.mapbox.navigation.ui.voice.view.MapboxSoundButton;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -90,11 +99,28 @@ import java.util.Objects;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.mapbox.turf.TurfMeasurement;
+import com.project.navigation.activities.MainActivity;
+import com.project.navigation.activities.SignInActivity;
 
 public class LifetimeOriginal extends AppCompatActivity {
+    private DatabaseReference mDatabase;
+    private Point orig;
+    private Button alarmOnOf;
     MapView mapView;
     Button Return;
     MaterialButton setRoute;
+    double distance, Speed;
+    private MediaPlayer mp;
     FloatingActionButton focusLocationBtn;
     private final NavigationLocationProvider navigationLocationProvider = new NavigationLocationProvider();
     private MapboxRouteLineView routeLineView;
@@ -203,15 +229,104 @@ public class LifetimeOriginal extends AppCompatActivity {
     };
 
     private boolean isVoiceInstructionsMuted = false;
+    private TextView remainingTime,remainingDistance;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lifetime_original);
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();
         Return=(Button)findViewById(R.id.Return);
         mapView = findViewById(R.id.mapView);
         focusLocationBtn = findViewById(R.id.focusLocation);
         setRoute = findViewById(R.id.setRoute);
+        remainingTime=findViewById(R.id.remainingTime);
+        remainingDistance=findViewById(R.id.remainingDistance);
+        alarmOnOf = findViewById(R.id.alarmOnOf);
+
+
+
+        mDatabase.child("userAddresses").addValueEventListener(
+                new ValueEventListener() {
+                    private  Location locations;
+                    private double latitude;
+                    private double longitude;
+                    private Point origin;
+                    private Point e;
+                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_pin);
+                    AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
+                    PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
+                    @SuppressLint("MissingPermission")
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+
+                            String userId = userSnapshot.getKey(); // Get the user ID
+                            //Point e = Point.fromLngLat(userSnapshot.child("latitude").getValue(Double.class), userSnapshot.child("longitude").getValue(Double.class));
+                            // servisin nerede olduğunu tutuyoruz
+                            Double latitude = userSnapshot.child("latitude").getValue(Double.class);
+                            Double longitude = userSnapshot.child("longitude").getValue(Double.class);
+                            if (latitude != null && longitude != null) {
+                                e = Point.fromLngLat(longitude,latitude);
+                                //ı ned to take the current location of the user!!
+                                // I HAVE SET THE ORIGIN AS THE CURRENT LOCATİON AND THE POİNT E İS FOR THE SERVİCE DRİVER LOCATİON
+                                //origin = currentLocation();
+
+
+
+                            } else {
+                                Log.d("MainActivity", "Latitude or Longitude is null for User ID: " + userId);
+                            }
+                            //calculateSpeed();
+                            Speed = calculateSpeed();
+                            if(orig!=null){
+                                calculateDistance(currentLocation(),e);
+                            }
+                            else{
+                                calculateDistance(e,e);
+                            }
+
+                            if((Speed == 0.0) ){
+                                Speed=30.0;
+                            }
+                            else{
+                                Speed = Speed*1.609344;
+                            }
+                            double time=(distance/Speed);
+                            time = time * 60;
+                            String timeFormattedValue = String.format("%.2f", time);
+
+                            remainingDistance.setText("Remaining Distance: \n" +  distance);
+                            remainingTime.setText("Remaining Time: \n" +  timeFormattedValue);
+
+
+                            if(distance <= 1){  // aralarındaki mesafe 1 km kalınca yani yaklaşık 10 -12dk arasında olunca alarm çalacak
+                                //set alarmm1!!!!!!!!!!!
+
+                                mp =  MediaPlayer.create(LifetimeOriginal.this,R.raw.alarmvoice);
+                                mp.setLooping(true);
+                                mp.start();
+                                alarmOnOf.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        mp.setLooping(false);
+                                        mp.stop();
+
+                                    }
+                                });
+
+                            }
+                        }
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Log.w("MatrixPage", "Failed to read value.", databaseError.toException());
+                    }
+                }
+        );
 
 
 
@@ -346,6 +461,109 @@ public class LifetimeOriginal extends AppCompatActivity {
     }
 
     @SuppressLint("MissingPermission")
+    private Point currentLocation(){
+
+        LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(LifetimeOriginal.this);
+        locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
+            @Override
+            public void onSuccess(LocationEngineResult result) {
+                Location locations = result.getLastLocation();
+                double latitude = locations.getLatitude();
+                double longitude = locations.getLongitude();
+                orig= Point.fromLngLat(longitude, latitude);
+
+            }
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+            }
+        });
+        return orig;
+    }
+
+    @SuppressLint("MissingPermission")
+    private double calculateSpeed(){
+        LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(LifetimeOriginal.this);
+        locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
+            @Override
+            public void onSuccess(LocationEngineResult result) {
+                Location locations = result.getLastLocation();
+
+                Speed = result.getLastLocation().getSpeed();
+                Toast.makeText(LifetimeOriginal.this, "Speed: " +Speed, Toast.LENGTH_SHORT).show();
+                Toast.makeText(LifetimeOriginal.this, "Origin: " +orig, Toast.LENGTH_SHORT).show();
+            }
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+            }
+        });
+        return Speed;
+    }
+
+
+    private void calculateDistance(Point origin, Point destination) {
+
+        String accessToken = "sk.eyJ1IjoibnVyYmFudWNhbmJheiIsImEiOiJjbHc2NGhuOWUxbDlqMmpwZHB6MThrM2M3In0.f5ZKapBICS8qsCX4S3IDJg";
+        List<Point> pairPoints= new ArrayList<>();
+        pairPoints.add(origin);
+        pairPoints.add(destination);
+        // Make a request to the Mapbox Matrix API
+        MapboxMatrix mapboxMatrix = MapboxMatrix.builder()
+                .accessToken(accessToken)
+                .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
+                .coordinates(pairPoints)
+                .build();
+        mapboxMatrix.enqueueCall(new Callback<MatrixResponse>() {
+            @Override
+            public void onResponse(Call<MatrixResponse> call, Response<MatrixResponse> response) {
+                String distanceFormattedValue = null;
+                if (response.isSuccessful() && response.body() != null) {
+                    MatrixResponse matrixResponse = response.body();
+                    Log.e("MatrixAPI", "Response Body: " + response.body().toString());
+                    // Check if destinations and durations are not null and not empty
+                    if (matrixResponse.destinations() != null && !matrixResponse.destinations().isEmpty() &&
+                            matrixResponse.durations() != null && !matrixResponse.durations().isEmpty()) {
+                        double distanceBetweenLastAndSecondToLastClickPoint = 0;
+                        double totalLineDistance = 0;
+
+                        // Make the Turf calculation between the last tap point and the second-to-last tap point.
+                        if (pairPoints.size() >= 2) {
+                            distanceBetweenLastAndSecondToLastClickPoint = TurfMeasurement.distance(
+                                    pairPoints.get(pairPoints.size() - 2), pairPoints.get(pairPoints.size() - 1));
+                            totalLineDistance += distanceBetweenLastAndSecondToLastClickPoint;
+                        }
+                        distanceBetweenLastAndSecondToLastClickPoint=distanceBetweenLastAndSecondToLastClickPoint*1.609344;
+                        totalLineDistance = (totalLineDistance*1.609344);
+
+                        if(totalLineDistance!=0){
+                            distanceFormattedValue = String.format("%.2f", totalLineDistance);
+                            distance = Double.parseDouble(distanceFormattedValue);
+                        }
+
+
+                        Double time=(totalLineDistance/Speed);
+                        Location location = new Location("point_to_location");
+                        location.setLatitude(origin.latitude());
+                        location.setLongitude(origin.longitude());
+                        //fetchRoute(pairPoints);
+
+                    } else {
+                        // Display a message if destinations or durations are empty
+                        Toast.makeText(LifetimeOriginal.this, "Empty response for destinations or durations", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    // Log the error message if the response is not successful
+                    Log.e("MatrixAPI", "Failed to get a successful response. Error message: " + response.message());
+                    // Display a message if the response is not successful
+                    Toast.makeText(LifetimeOriginal.this, "Failed to get a successful response", Toast.LENGTH_SHORT).show();
+                }
+            }   @Override
+            public void onFailure(Call<MatrixResponse> call, Throwable t) {
+                Toast.makeText(LifetimeOriginal.this, "Failed to calculate distance: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @SuppressLint("MissingPermission")
     private void fetchRoute(Point point) {
         LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(LifetimeOriginal.this);
         locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
@@ -398,5 +616,13 @@ public class LifetimeOriginal extends AppCompatActivity {
         mapboxNavigation.onDestroy();
         mapboxNavigation.unregisterRoutesObserver(routesObserver);
         mapboxNavigation.unregisterLocationObserver(locationObserver);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // do something on back.
+        super.onBackPressed();
+        startActivity(new Intent(LifetimeOriginal.this, Dashboard.class));
+        return;
     }
 }

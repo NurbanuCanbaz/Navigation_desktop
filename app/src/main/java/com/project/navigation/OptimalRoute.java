@@ -592,4 +592,12 @@ public class OptimalRoute extends AppCompatActivity {
         mapboxNavigation.unregisterRoutesObserver(routesObserver);
         mapboxNavigation.unregisterLocationObserver(locationObserver);
     }
+
+    @Override
+    public void onBackPressed() {
+        // do something on back.
+        super.onBackPressed();
+        startActivity(new Intent(OptimalRoute.this, Dashboard.class));
+        return;
+    }
 }

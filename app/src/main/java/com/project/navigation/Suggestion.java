@@ -26,4 +26,7 @@ public class Suggestion {
     public String getFeedback() {
         return feedback;
     }
+
+
+
 }

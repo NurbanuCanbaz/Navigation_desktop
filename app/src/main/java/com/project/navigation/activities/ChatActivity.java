@@ -1,6 +1,7 @@
 package com.project.navigation.activities;
 
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -17,6 +18,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.project.navigation.Dashboard;
+import com.project.navigation.NotificationSystemPage;
 import com.project.navigation.adapters.ChatAdapter;
 import com.project.navigation.databinding.ActivityChatBinding;
 import com.project.navigation.models.ChatMessage;
@@ -301,5 +304,6 @@ public class ChatActivity extends BaseActivity {
         super.onResume();
         listenAvailabilityOfReceiver();
     }
+
 
 }

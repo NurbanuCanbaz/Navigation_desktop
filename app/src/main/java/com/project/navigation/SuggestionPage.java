@@ -80,4 +80,11 @@ public class SuggestionPage extends AppCompatActivity {
         });
 
     }
+    @Override
+    public void onBackPressed() {
+        // do something on back.
+        super.onBackPressed();
+        startActivity(new Intent(SuggestionPage.this, Dashboard.class));
+        return;
+    }
 }
