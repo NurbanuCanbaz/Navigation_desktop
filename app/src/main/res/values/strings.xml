@@ -12,5 +12,7 @@
     <string name="select_user">Select User</string>
     <string name="online">Online</string>
     <string name="type_a_message">Type a message</string>
+    <string name="line_distance_textview">Line distance in %1$s: %2$s</string>
+
 
 </resources>

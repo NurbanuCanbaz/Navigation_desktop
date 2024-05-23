@@ -48,32 +48,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 7000);
 
-/*
-
-                Dashboard.setOnClickListener(new View.OnClickListener() {
-                                                 @Override
-
-                                                 public void onClick(View v) {
-                                                     Intent intent = new Intent(MainActivity.this, com.project.navigation.Dashboard.class);
-                                                     startActivity(intent);
-                                                     finish();
-                                                     return;
-                                                 }
-
-                                             }
-                );
-
-        Return.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            Intent intent = new Intent(MainActivity.this, SignInActivity.class);
-                                            startActivity(intent);
-                                            finish();
-                                            return;
-                                        }
-
-                                    }
-        );*/
     }
 
     @Override

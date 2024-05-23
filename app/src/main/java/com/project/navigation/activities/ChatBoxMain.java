@@ -17,6 +17,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.project.navigation.Dashboard;
+import com.project.navigation.NotificationSystemPage;
 import com.project.navigation.ProfilePage;
 import com.project.navigation.R;
 import com.project.navigation.adapters.RecentConversationsAdapter;
@@ -194,6 +195,14 @@ public class ChatBoxMain extends BaseActivity implements ConversionListener {
         Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
         intent.putExtra(Constants.KEY_USER, user);
         startActivity(intent);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // do something on back.
+        super.onBackPressed();
+        startActivity(new Intent(ChatBoxMain.this, Dashboard.class));
+        return;
     }
 
 }

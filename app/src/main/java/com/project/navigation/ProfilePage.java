@@ -213,5 +213,12 @@ public class ProfilePage extends AppCompatActivity {
         super.onStop();
 
     }
+    @Override
+    public void onBackPressed() {
+        // do something on back.
+        super.onBackPressed();
+        startActivity(new Intent(ProfilePage.this, Dashboard.class));
+        return;
+    }
 
 }

@@ -10,10 +10,13 @@ import android.widget.Button;
 
 public class NotificationSystemPage extends AppCompatActivity {
     private Button Return;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notification_system_page);
+
+
 
         Return=(Button)findViewById(R.id.Return);
         Return.setOnClickListener(new View.OnClickListener() {
@@ -28,5 +31,14 @@ public class NotificationSystemPage extends AppCompatActivity {
 
             }
         });
+
+
+    }
+    @Override
+    public void onBackPressed() {
+        // do something on back.
+        super.onBackPressed();
+        startActivity(new Intent(NotificationSystemPage.this, Dashboard.class));
+        return;
     }
 }

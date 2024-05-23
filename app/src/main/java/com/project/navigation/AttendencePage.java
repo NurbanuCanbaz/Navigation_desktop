@@ -101,4 +101,11 @@ public class AttendencePage extends AppCompatActivity {
                     }
            });
     }
+    @Override
+    public void onBackPressed() {
+        // do something on back.
+        super.onBackPressed();
+        startActivity(new Intent(AttendencePage.this, ProfilePage.class));
+        return;
+    }
 }

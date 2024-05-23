@@ -5,6 +5,7 @@ import static com.mapbox.maps.plugin.gestures.GesturesUtils.addOnMapClickListene
 import static com.mapbox.maps.plugin.gestures.GesturesUtils.getGestures;
 import static com.mapbox.maps.plugin.locationcomponent.LocationComponentUtils.getLocationComponent;
 import static com.mapbox.navigation.base.extensions.RouteOptionsExtensions.applyDefaultNavigationOptions;
+import static com.mapbox.turf.TurfConstants.UNIT_KILOMETERS;
 
 import static java.lang.Double.valueOf;
 import com.google.firebase.database.DataSnapshot;
@@ -15,19 +16,24 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +42,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -45,6 +52,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.gson.JsonObject;
+import com.google.type.LatLng;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineProvider;
@@ -55,6 +64,7 @@ import com.mapbox.api.directions.v5.DirectionsCriteria;
 import com.mapbox.api.directions.v5.models.Bearing;
 import com.mapbox.api.directions.v5.models.RouteOptions;
 import com.mapbox.api.directions.v5.models.VoiceInstructions;
+import com.mapbox.api.geocoding.v5.models.CarmenFeature;
 import com.mapbox.api.matrix.v1.MapboxMatrix;
 import com.mapbox.api.matrix.v1.models.MatrixResponse;
 import com.mapbox.bindgen.Expected;
@@ -63,6 +73,7 @@ import com.mapbox.geojson.Point;
 import com.mapbox.maps.CameraOptions;
 import com.mapbox.maps.EdgeInsets;
 import com.mapbox.maps.MapView;
+import com.mapbox.maps.MapboxMap;
 import com.mapbox.maps.Style;
 import com.mapbox.maps.extension.style.layers.properties.generated.TextAnchor;
 import com.mapbox.maps.plugin.animation.MapAnimationOptions;
@@ -119,6 +130,7 @@ import com.mapbox.search.autocomplete.PlaceAutocompleteSuggestion;
 import com.mapbox.search.ui.adapter.autocomplete.PlaceAutocompleteUiAdapter;
 import com.mapbox.search.ui.view.CommonSearchViewConfiguration;
 import com.mapbox.search.ui.view.SearchResultsView;
+import com.mapbox.turf.TurfMeasurement;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -141,21 +153,26 @@ import android.os.Handler;
 
 public class MatrixPage extends AppCompatActivity {
     private DatabaseReference mDatabase;
-
+    private static final String DISTANCE_UNITS = UNIT_KILOMETERS;
+    private int i=0;
     private FeatureCollection featureCollection;
     private List<Point> userPoint = new ArrayList<>();
     private RecyclerView recyclerView;
     private List<Point> searchedPoint=new ArrayList<>();
     private List<Point> destinationPoints = new ArrayList<>();
+    private  ArrayList<String> stationNames= new ArrayList<>();
 
-    private List<Point> coordinates = new ArrayList<>();
     private Location previousLocation;
     private double totalDistance;
     private long previousUpdateTimeMillis;
 
 
     private Double speed;
+    private double Speed;
+
     MapView mapView;
+    private MapboxMap mapboxMap;
+
     MaterialButton setRoute;
     FloatingActionButton focusLocationBtn;
     private final NavigationLocationProvider navigationLocationProvider = new NavigationLocationProvider();
@@ -167,12 +184,7 @@ public class MatrixPage extends AppCompatActivity {
     private Handler handler = new Handler();
     private Runnable runnable;
 
-
-    private Point origin = Point.fromLngLat( 39.983748, 32.816814);
-    private Point destination = Point.fromLngLat(40.056971, 32.646201);
     private final LocationObserver locationObserver = new LocationObserver() {
-
-
         @Override
         public void onNewRawLocation(@NonNull Location location) {
             if (previousLocation != null) {
@@ -213,6 +225,9 @@ public class MatrixPage extends AppCompatActivity {
         }
     };
 
+
+
+
     private double calculateCurrentSpeed(Location location) {
         long currentTimeMillis = System.currentTimeMillis();
         long timeElapsedMillis = currentTimeMillis - previousUpdateTimeMillis;
@@ -221,7 +236,7 @@ public class MatrixPage extends AppCompatActivity {
             currentSpeed = (location.distanceTo(previousLocation) / timeElapsedMillis) * 1000; // in meters per second
         } else {
             // If time elapsed is 0 or negative, set a default speed
-            currentSpeed = 5.0; // Default speed: 5 meters per second
+            currentSpeed = 30.0; // Default speed: 5 meters per second
         }
         previousUpdateTimeMillis = currentTimeMillis;
         return currentSpeed;
@@ -332,8 +347,9 @@ public class MatrixPage extends AppCompatActivity {
 
     private PlaceAutocomplete placeAutocomplete;
     private SearchResultsView searchResultsView;
+    private SearchView searchViewFrom, searchViewTo;
     private PlaceAutocompleteUiAdapter placeAutocompleteUiAdapter;
-    private TextInputEditText searchET;
+    //private TextInputEditText searchET;
     private boolean ignoreNextQueryUpdate = false;
     private MapboxManeuverView mapboxManeuverView;
     private MapboxManeuverApi maneuverApi;
@@ -357,8 +373,9 @@ public class MatrixPage extends AppCompatActivity {
                 @NonNull
                 @Override
                 public Object invoke(@NonNull List<Maneuver> input) {
-                    mapboxManeuverView.setVisibility(View.VISIBLE);
-                    mapboxManeuverView.renderManeuvers(maneuverApi.getManeuvers(routeProgress));
+                    //I have closed th emanuever view to see the results open it in different page!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    //mapboxManeuverView.setVisibility(View.VISIBLE);
+                    //mapboxManeuverView.renderManeuvers(maneuverApi.getManeuvers(routeProgress));
                     return new Object();
                 }
             });
@@ -375,74 +392,90 @@ public class MatrixPage extends AppCompatActivity {
         mapView = findViewById(R.id.mapView);
         focusLocationBtn = findViewById(R.id.focusLocation);
         setRoute = findViewById(R.id.setRoute);
-        mapboxManeuverView = findViewById(R.id.maneuverView);
+        //mapboxManeuverView = findViewById(R.id.maneuverView);
         Return = (Button)findViewById(R.id.Return);
-
         maneuverApi = new MapboxManeuverApi(new MapboxDistanceFormatter(new DistanceFormatterOptions.Builder(MatrixPage.this).build()));
         routeArrowView = new MapboxRouteArrowView(new RouteArrowOptions.Builder(MatrixPage.this).build());
-
         MapboxRouteLineOptions options = new MapboxRouteLineOptions.Builder(this).withRouteLineResources(new RouteLineResources.Builder().build())
                 .withRouteLineBelowLayerId(LocationComponentConstants.LOCATION_INDICATOR_LAYER).build();
         routeLineView = new MapboxRouteLineView(options);
         routeLineApi = new MapboxRouteLineApi(options);
-
         speechApi = new MapboxSpeechApi(MatrixPage.this, getString(R.string.mapbox_access_token), Locale.US.toLanguageTag());
         mapboxVoiceInstructionsPlayer = new MapboxVoiceInstructionsPlayer(MatrixPage.this, Locale.US.toLanguageTag());
-
         NavigationOptions navigationOptions = new NavigationOptions.Builder(this).accessToken(getString(R.string.mapbox_access_token)).build();
-
         MapboxNavigationApp.setup(navigationOptions);
         mapboxNavigation = new MapboxNavigation(navigationOptions);
-
         mapboxNavigation.registerRouteProgressObserver(routeProgressObserver);
         mapboxNavigation.registerRoutesObserver(routesObserver);
         mapboxNavigation.registerLocationObserver(locationObserver);
         mapboxNavigation.registerVoiceInstructionsObserver(voiceInstructionsObserver);
-
         placeAutocomplete = PlaceAutocomplete.create(getString(R.string.mapbox_access_token));
-        searchET = findViewById(R.id.searchET);
-
-        searchResultsView = findViewById(R.id.search_results_view);
-        searchResultsView.initialize(new SearchResultsView.Configuration(new CommonSearchViewConfiguration()));
-
-        placeAutocompleteUiAdapter = new PlaceAutocompleteUiAdapter(searchResultsView, placeAutocomplete, LocationEngineProvider.getBestLocationEngine(MatrixPage.this));
-
-
-        //Access user location from firebase:
-
+        //searchET = findViewById(R.id.searchET);
+        //searchResultsView = findViewById(R.id.search_results_view);
+        //searchResultsView.initialize(new SearchResultsView.Configuration(new CommonSearchViewConfiguration()));
+        //placeAutocompleteUiAdapter = new PlaceAutocompleteUiAdapter(searchResultsView, placeAutocomplete, LocationEngineProvider.getBestLocationEngine(MatrixPage.this));
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        // Replace "userId123" with the actual user ID
-
-        editTextOrigin = findViewById(R.id.editTextOrigin);
-        editTextDestination = findViewById(R.id.editTextDestination);
         buttonCalculate = findViewById(R.id.buttonCalculate);
         textViewResult = findViewById(R.id.textViewResult);
         lngLt = findViewById(R.id.lngLnt);
         timeCurrentResult=findViewById(R.id.currentTime);
 
-        //timeCurrentResult.setText("Time: " +  timeDisplay());
 
 
-
+        timeCurrentResult.setText("Time: " +  timeDisplay());
+        List<Point> stations = new ArrayList<>();
         // Read latitude and longitude from the database
-        mDatabase.child("userAddresses").addListenerForSingleValueEvent(
+        mDatabase.child("userAddresses").addValueEventListener(
                 new ValueEventListener() {
+                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_pin);
+                    AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
+                    PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
                         for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                            i+=1;
                             String userId = userSnapshot.getKey(); // Get the user ID
+                            //Point e = Point.fromLngLat(userSnapshot.child("latitude").getValue(Double.class), userSnapshot.child("longitude").getValue(Double.class));
                             Double latitude = userSnapshot.child("latitude").getValue(Double.class);
                             Double longitude = userSnapshot.child("longitude").getValue(Double.class);
-
-
                             if (latitude != null && longitude != null) {
+                                Point e = Point.fromLngLat(longitude,latitude);
+
                                 //System.out.println("Latitude:"+latitude);
-                                lngLt.setText("User ıd:"+ userId+"Latitude: " + latitude + ", Longitude: " + longitude);
+                                lngLt.setText("Latitude: " + latitude + ", Longitude: " + longitude);
+                                //Point from= (latitude,longitude);
+                                String placeName= "Station " + i;
+                                //List<String> waypointNames = Arrays.asList("Current Location", placeName);
+
+                                //Point to=();
+                                //calculateDistance(from,to);
+
+
+
+                                PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions()
+                                        .withTextAnchor(TextAnchor.CENTER)
+                                        .withIconImage(bitmap)
+                                        .withPoint(e);
+                                pointAnnotationManager.create(pointAnnotationOptions);
+
+                                stations.add(e);
+                                /*
+                                RouteOptions.Builder builder = RouteOptions.builder();
+                                builder.coordinatesList(stations);
+                                builder.alternatives(true);
+                                builder.waypointNamesList(waypointNames);
+                                builder.profile(DirectionsCriteria.PROFILE_DRIVING);
+
+                                applyDefaultNavigationOptions(builder);*/
                             } else {
                                 Log.d("MainActivity", "Latitude or Longitude is null for User ID: " + userId);
                             }
                         }
+                        fetchRoute(stations);
+
+
                     }
 
 
@@ -452,6 +485,106 @@ public class MatrixPage extends AppCompatActivity {
                     }
                 }
         );
+
+
+
+
+        searchViewFrom = findViewById(R.id.searchViewFrom);
+        ListView listViewFrom = findViewById(R.id.ListViewFrom);
+
+        searchViewTo = findViewById(R.id.searchViewTo);
+        ListView listViewTo= findViewById(R.id.ListViewTo);
+
+        stationNames.add("Station 1");
+        stationNames.add("Station 2");
+        stationNames.add("Station 3");
+        stationNames.add("Station 4");
+        stationNames.add("Station 5");
+        stationNames.add("Station 6");
+        stationNames.add("Station 7");
+        stationNames.add("Station 8");
+        stationNames.add("Station 9");
+        stationNames.add("Station 10");
+        stationNames.add("Station 11");
+        stationNames.add("Station 12");
+        stationNames.add("Station 13");
+        stationNames.add("Station 14");
+        stationNames.add("Station 15");
+
+        ArrayAdapter<String> nameAdapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, stationNames) ;
+        ArrayAdapter<String> nameAdapter2 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, stationNames) ;
+
+        listViewFrom.setAdapter(nameAdapter1);
+        listViewTo.setAdapter(nameAdapter2);
+
+        listViewFrom.setVisibility(View.GONE);
+        listViewTo.setVisibility(View.GONE);
+        searchViewFrom.setQueryHint("From");
+        searchViewTo.setQueryHint("To");
+
+        searchViewFrom.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                /*
+                for (String name : stationNames) {
+                    if (name.toLowerCase().contains(query.toLowerCase())) {
+                        listViewFrom.setVisibility(View.VISIBLE);
+                        System.out.println("Button '" + name + "' is visible");
+                    } else {
+                        listViewFrom.setVisibility(View.GONE);
+                        System.out.println("Button '" + name+ "' is hidden");
+                    }
+                }*/
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                listViewFrom.setVisibility(View.VISIBLE);
+                nameAdapter1.getFilter().filter(newText);
+
+                return false;
+            }
+        });
+
+
+        searchViewTo.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                /*
+                for (String name : stationNames) {
+                    if (name.toLowerCase().contains(query.toLowerCase())) {
+                        listViewTo.setVisibility(View.VISIBLE);
+                        System.out.println("Button '" + name + "' is visible");
+                    } else {
+                        listViewTo.setVisibility(View.GONE);
+                        System.out.println("Button '" + name+ "' is hidden");
+                    }
+                }*/
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                listViewTo.setVisibility(View.VISIBLE);
+                nameAdapter2.getFilter().filter(newText);
+                return false;
+            }
+        });
+        // Set up item click listener for listViewFrom
+        listViewFrom.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedItem = nameAdapter1.getItem(position);
+            searchViewFrom.setQuery(selectedItem, false);
+            listViewFrom.setVisibility(View.GONE);
+        });
+
+        // Set up item click listener for listViewTo
+        listViewTo.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedItem = nameAdapter2.getItem(position);
+            searchViewTo.setQuery(selectedItem, false);
+            listViewTo.setVisibility(View.GONE);
+        });
+
 
         runnable = new Runnable() {
             @Override
@@ -471,25 +604,6 @@ public class MatrixPage extends AppCompatActivity {
         // Start the runnable for the first time
         handler.post(runnable);
 
-        // Create a list of origin and destination points
-        coordinates.add(origin);
-        coordinates.add(destination);
-        /*
-        for(int i = 0 ; i<destinationPoints.size(); i++){
-            coordinates.add(destinationPoints.get(i));
-        }*/
-
-
-        buttonCalculate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                calculateDistance(coordinates.get(0), coordinates.get(1));
-
-            }
-        });
-
-
         Return.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -502,8 +616,8 @@ public class MatrixPage extends AppCompatActivity {
 
         });
 
-
-        searchET.addTextChangedListener(new TextWatcher() {
+/*
+         searchET.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -538,7 +652,7 @@ public class MatrixPage extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {
 
             }
-        });
+        });*/
 
         MapboxSoundButton soundButton = findViewById(R.id.soundButton);
         soundButton.unmute();
@@ -639,18 +753,19 @@ public class MatrixPage extends AppCompatActivity {
                     }
                 });
 
+                /*
+
                 placeAutocompleteUiAdapter.addSearchListener(new PlaceAutocompleteUiAdapter.SearchListener() {
                     @Override
                     public void onSuggestionsShown(@NonNull List<PlaceAutocompleteSuggestion> list) {
 
                     }
-
                     @Override
                     public void onSuggestionSelected(@NonNull PlaceAutocompleteSuggestion placeAutocompleteSuggestion) {
                         ignoreNextQueryUpdate = true;
                         focusLocation = false;
-                        searchET.setText(placeAutocompleteSuggestion.getName());
-                        searchResultsView.setVisibility(View.GONE);
+                        //searchET.setText(placeAutocompleteSuggestion.getName());
+                        //searchResultsView.setVisibility(View.GONE);
 
                         pointAnnotationManager.deleteAll();
                         PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions().withTextAnchor(TextAnchor.CENTER).withIconImage(bitmap)
@@ -676,70 +791,7 @@ public class MatrixPage extends AppCompatActivity {
                     public void onError(@NonNull Exception e) {
 
                     }
-                });
-
-
-
-
-            }
-        });
-    }
-
-
-
-
-
-
-    private void calculateDistance(Point origin, Point destination) {
-        String accessToken = "sk.eyJ1IjoibnVyYmFudWNhbmJheiIsImEiOiJjbHc2NGhuOWUxbDlqMmpwZHB6MThrM2M3In0.f5ZKapBICS8qsCX4S3IDJg";
-        List<Point> pairPoints= new ArrayList<>();
-        pairPoints.add(origin);
-        pairPoints.add(destination);
-        // Make a request to the Mapbox Matrix API
-        MapboxMatrix mapboxMatrix = MapboxMatrix.builder()
-                .accessToken(accessToken)
-                .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
-                .coordinates(pairPoints)
-                .build();
-        mapboxMatrix.enqueueCall(new Callback<MatrixResponse>() {
-            @Override
-            public void onResponse(Call<MatrixResponse> call, Response<MatrixResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    MatrixResponse matrixResponse = response.body();
-                    Log.e("MatrixAPI", "Response Body: " + response.body().toString());
-                    // Check if destinations and durations are not null and not empty
-                    if (matrixResponse.destinations() != null && !matrixResponse.destinations().isEmpty() &&
-                            matrixResponse.durations() != null && !matrixResponse.durations().isEmpty()) {
-
-                        // Assuming only one pair of points is requested
-                        double distance = (matrixResponse.destinations().get(1).distance())/1000;
-                        //double durationInSeconds = matrixResponse.durations().get(0)[0];
-
-                        Location location = new Location("point_to_location");
-                        location.setLatitude(origin.latitude());
-                        location.setLongitude(origin.longitude());
-                        //speed=calculateCurrentSpeed(location)*3.6;
-                        speed=5.0;
-                        Double time=(distance/speed)*60000.0;;
-
-                        textViewResult.setText("Distance: " + distance + " km\nDuration: " + time +"h" );
-
-                    } else {
-                        // Display a message if destinations or durations are empty
-                        Toast.makeText(MatrixPage.this, "Empty response for destinations or durations", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    // Log the error message if the response is not successful
-                    Log.e("MatrixAPI", "Failed to get a successful response. Error message: " + response.message());
-                    // Display a message if the response is not successful
-                    Toast.makeText(MatrixPage.this, "Failed to get a successful response", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-
-            @Override
-            public void onFailure(Call<MatrixResponse> call, Throwable t) {
-                Toast.makeText(MatrixPage.this, "Failed to calculate distance: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                });*/
             }
         });
     }
@@ -747,13 +799,16 @@ public class MatrixPage extends AppCompatActivity {
     @SuppressLint("MissingPermission")
     private void fetchRoute(List<Point> point) {
         LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(MatrixPage.this);
+
         locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
             @Override
             public void onSuccess(LocationEngineResult result) {
                 Location locations = result.getLastLocation();
+
                 setRoute.setEnabled(false);
                 setRoute.setText("Fetching route...");
                 RouteOptions.Builder builder = RouteOptions.builder();
+                //current location
                 Point origin = Point.fromLngLat(Objects.requireNonNull(locations).getLongitude(), locations.getLatitude());
 
                 List<Point> coord = new ArrayList<>();
@@ -771,7 +826,7 @@ public class MatrixPage extends AppCompatActivity {
                 builder.coordinatesList(coord);
                 builder.alternatives(true);
                 //builder.waypointNamesList(waypointNames);
-                builder.profile(DirectionsCriteria.PROFILE_DRIVING);
+                builder.profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC);
                 builder.bearingsList(bearings);
 
                 applyDefaultNavigationOptions(builder);
@@ -783,6 +838,17 @@ public class MatrixPage extends AppCompatActivity {
                         focusLocationBtn.performClick();
                         setRoute.setEnabled(true);
                         setRoute.setText("Set route");
+
+                        buttonCalculate.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                for(int i=0;i<coord.size();i++){
+                                    //Log.d(coord.get(0)+""+ coord.get(i));
+                                    calculateDistance(coord.get(0), coord.get(i));
+                                }
+
+                            }
+                        });
                     }
 
                     @Override
@@ -805,12 +871,105 @@ public class MatrixPage extends AppCompatActivity {
             }
         });
     }
+    @SuppressLint("MissingPermission")
+    private double calculateSpeed(){
+        LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(MatrixPage.this);
+        locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
+            @Override
+            public void onSuccess(LocationEngineResult result) {
+                Location locations = result.getLastLocation();
+                Speed = result.getLastLocation().getSpeed();
+                Toast.makeText(MatrixPage.this, "Speed: " +Speed, Toast.LENGTH_SHORT).show();
+            }
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+            }
+        });
+        return Speed;
+    }
+    private void calculateDistance(Point origin, Point destination) {
+        String accessToken = "sk.eyJ1IjoibnVyYmFudWNhbmJheiIsImEiOiJjbHc2NGhuOWUxbDlqMmpwZHB6MThrM2M3In0.f5ZKapBICS8qsCX4S3IDJg";
+        List<Point> pairPoints= new ArrayList<>();
+        pairPoints.add(origin);
+        pairPoints.add(destination);
+        // Make a request to the Mapbox Matrix API
+        MapboxMatrix mapboxMatrix = MapboxMatrix.builder()
+                .accessToken(accessToken)
+                .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
+                .coordinates(pairPoints)
+                .build();
+        mapboxMatrix.enqueueCall(new Callback<MatrixResponse>() {
+            @Override
+            public void onResponse(Call<MatrixResponse> call, Response<MatrixResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    MatrixResponse matrixResponse = response.body();
+                    Log.e("MatrixAPI", "Response Body: " + response.body().toString());
+                    // Check if destinations and durations are not null and not empty
+                    if (matrixResponse.destinations() != null && !matrixResponse.destinations().isEmpty() &&
+                            matrixResponse.durations() != null && !matrixResponse.durations().isEmpty()) {
 
+                        double distanceBetweenLastAndSecondToLastClickPoint = 0;
+                        double totalLineDistance = 0;
+
+                        // Make the Turf calculation between the last tap point and the second-to-last tap point.
+                        if (pairPoints.size() >= 2) {
+                            distanceBetweenLastAndSecondToLastClickPoint = TurfMeasurement.distance(
+                                    pairPoints.get(pairPoints.size() - 2), pairPoints.get(pairPoints.size() - 1));
+                            totalLineDistance += distanceBetweenLastAndSecondToLastClickPoint;
+                        }
+                        distanceBetweenLastAndSecondToLastClickPoint=distanceBetweenLastAndSecondToLastClickPoint*1.609344;
+                        totalLineDistance = (totalLineDistance*1.609344);
+                        String distanceFormattedValue = String.format("%.2f", totalLineDistance);
+
+                        Location location = new Location("point_to_location");
+                        location.setLatitude(origin.latitude());
+                        location.setLongitude(origin.longitude());
+                        //fetchRoute(pairPoints);
+                        Speed = calculateSpeed();
+                        if((Speed == 0.0) ){
+                            Speed=30.0;
+                        }
+                        else{
+                            Speed = Speed*1.609344;
+                        }
+                        Double time=(totalLineDistance/Speed);
+                        time = time * 60;
+                        String timeFormattedValue = String.format("%.2f", time);
+                        if(totalLineDistance!=0){
+                            textViewResult.setText("Distance: " + distanceFormattedValue + " km\nDuration: " + timeFormattedValue +"min\n" +" Speed :" + Speed);
+
+                        }
+
+                    } else {
+                        // Display a message if destinations or durations are empty
+                        Toast.makeText(MatrixPage.this, "Empty response for destinations or durations", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    // Log the error message if the response is not successful
+                    Log.e("MatrixAPI", "Failed to get a successful response. Error message: " + response.message());
+                    // Display a message if the response is not successful
+                    Toast.makeText(MatrixPage.this, "Failed to get a successful response", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<MatrixResponse> call, Throwable t) {
+                Toast.makeText(MatrixPage.this, "Failed to calculate distance: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
         mapboxNavigation.onDestroy();
         mapboxNavigation.unregisterRoutesObserver(routesObserver);
         mapboxNavigation.unregisterLocationObserver(locationObserver);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // do something on back.
+        super.onBackPressed();
+        startActivity(new Intent(MatrixPage.this, Dashboard.class));
+        return;
     }
 }

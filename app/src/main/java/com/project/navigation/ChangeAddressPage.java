@@ -37,6 +37,7 @@ public class ChangeAddressPage extends AppCompatActivity {
         Return = (Button) findViewById(R.id.Return);
 
         // Initialize Firebase reference
+
         addressRef = FirebaseDatabase.getInstance().getReference().child("userAddresses");
 
         // Set onClickListener for Save Changes button
@@ -114,5 +115,13 @@ public class ChangeAddressPage extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     Toast.makeText(ChangeAddressPage.this, "Failed to save address: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    @Override
+    public void onBackPressed() {
+        // do something on back.
+        super.onBackPressed();
+        startActivity(new Intent(ChangeAddressPage.this, ProfilePage.class));
+        return;
     }
 }
