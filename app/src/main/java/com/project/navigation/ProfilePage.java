@@ -181,8 +181,6 @@ public class ProfilePage extends AppCompatActivity {
         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         bindingProfile.imageProfile.setImageBitmap(bitmap);
 
-
-
     }
 
     private void signOut(){

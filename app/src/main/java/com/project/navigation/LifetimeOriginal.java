@@ -10,10 +10,13 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Address;
 import android.location.Location;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -34,6 +37,9 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineProvider;
@@ -43,6 +49,9 @@ import com.mapbox.api.directions.v5.DirectionsCriteria;
 import com.mapbox.api.directions.v5.models.Bearing;
 import com.mapbox.api.directions.v5.models.RouteOptions;
 import com.mapbox.api.directions.v5.models.VoiceInstructions;
+import com.mapbox.api.geocoding.v5.MapboxGeocoding;
+import com.mapbox.api.geocoding.v5.models.CarmenFeature;
+import com.mapbox.api.geocoding.v5.models.GeocodingResponse;
 import com.mapbox.api.matrix.v1.MapboxMatrix;
 import com.mapbox.api.matrix.v1.models.MatrixResponse;
 import com.mapbox.bindgen.Expected;
@@ -91,8 +100,11 @@ import com.mapbox.navigation.ui.voice.model.SpeechValue;
 import com.mapbox.navigation.ui.voice.model.SpeechVolume;
 import com.mapbox.navigation.ui.voice.view.MapboxSoundButton;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -115,10 +127,10 @@ import com.project.navigation.activities.SignInActivity;
 public class LifetimeOriginal extends AppCompatActivity {
     private DatabaseReference mDatabase;
     private Point orig;
-    private Button alarmOnOf;
+    private Button alarmOnOf, Return;
     MapView mapView;
-    Button Return;
-    MaterialButton setRoute;
+    //MaterialButton setRoute;
+    private FirebaseAuth.AuthStateListener mAuthListener;
     double distance, Speed;
     private MediaPlayer mp;
     FloatingActionButton focusLocationBtn;
@@ -156,6 +168,7 @@ public class LifetimeOriginal extends AppCompatActivity {
     };
     boolean focusLocation = true;
     private MapboxNavigation mapboxNavigation;
+
     private void updateCamera(Point point, Double bearing) {
         MapAnimationOptions animationOptions = new MapAnimationOptions.Builder().duration(1500L).build();
         CameraOptions cameraOptions = new CameraOptions.Builder().center(point).zoom(18.0).bearing(bearing).pitch(45.0)
@@ -163,6 +176,7 @@ public class LifetimeOriginal extends AppCompatActivity {
 
         getCamera(mapView).easeTo(cameraOptions, animationOptions);
     }
+
     private final OnMoveListener onMoveListener = new OnMoveListener() {
         @Override
         public void onMoveBegin(@NonNull MoveGestureDetector moveGestureDetector) {
@@ -189,6 +203,7 @@ public class LifetimeOriginal extends AppCompatActivity {
             }
         }
     });
+    /*
 
     private MapboxSpeechApi speechApi;
     private MapboxVoiceInstructionsPlayer mapboxVoiceInstructionsPlayer;
@@ -228,106 +243,34 @@ public class LifetimeOriginal extends AppCompatActivity {
         }
     };
 
-    private boolean isVoiceInstructionsMuted = false;
-    private TextView remainingTime,remainingDistance;
+    private boolean isVoiceInstructionsMuted = false;*/
+    private TextView remainingTime, remainingDistance;
 
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lifetime_original);
-
+        mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        Return=(Button)findViewById(R.id.Return);
+        Return = (Button) findViewById(R.id.Return);
         mapView = findViewById(R.id.mapView);
         focusLocationBtn = findViewById(R.id.focusLocation);
-        setRoute = findViewById(R.id.setRoute);
-        remainingTime=findViewById(R.id.remainingTime);
-        remainingDistance=findViewById(R.id.remainingDistance);
+        //setRoute = findViewById(R.id.setRoute);
+        remainingTime = findViewById(R.id.remainingTime);
+        remainingDistance = findViewById(R.id.remainingDistance);
         alarmOnOf = findViewById(R.id.alarmOnOf);
 
+        SharedPreferences preferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+        // Use getString with the resource id as default value
+        String defaultAddress = getString(R.string.default_address);
+        String address = preferences.getString("address", defaultAddress);
+        if(address!=null){
+            Toast.makeText(LifetimeOriginal.this, "address: "+ address, Toast.LENGTH_SHORT).show();
+            geocodeAddress(address);
 
-
-        mDatabase.child("userAddresses").addValueEventListener(
-                new ValueEventListener() {
-                    private  Location locations;
-                    private double latitude;
-                    private double longitude;
-                    private Point origin;
-                    private Point e;
-                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_pin);
-                    AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
-                    PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
-                    @SuppressLint("MissingPermission")
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                        for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
-
-                            String userId = userSnapshot.getKey(); // Get the user ID
-                            //Point e = Point.fromLngLat(userSnapshot.child("latitude").getValue(Double.class), userSnapshot.child("longitude").getValue(Double.class));
-                            // servisin nerede olduğunu tutuyoruz
-                            Double latitude = userSnapshot.child("latitude").getValue(Double.class);
-                            Double longitude = userSnapshot.child("longitude").getValue(Double.class);
-                            if (latitude != null && longitude != null) {
-                                e = Point.fromLngLat(longitude,latitude);
-                                //ı ned to take the current location of the user!!
-                                // I HAVE SET THE ORIGIN AS THE CURRENT LOCATİON AND THE POİNT E İS FOR THE SERVİCE DRİVER LOCATİON
-                                //origin = currentLocation();
-
-
-
-                            } else {
-                                Log.d("MainActivity", "Latitude or Longitude is null for User ID: " + userId);
-                            }
-                            //calculateSpeed();
-                            Speed = calculateSpeed();
-                            if(orig!=null){
-                                calculateDistance(currentLocation(),e);
-                            }
-                            else{
-                                calculateDistance(e,e);
-                            }
-
-                            if((Speed == 0.0) ){
-                                Speed=30.0;
-                            }
-                            else{
-                                Speed = Speed*1.609344;
-                            }
-                            double time=(distance/Speed);
-                            time = time * 60;
-                            String timeFormattedValue = String.format("%.2f", time);
-
-                            remainingDistance.setText("Remaining Distance: \n" +  distance);
-                            remainingTime.setText("Remaining Time: \n" +  timeFormattedValue);
-
-
-                            if(distance <= 1){  // aralarındaki mesafe 1 km kalınca yani yaklaşık 10 -12dk arasında olunca alarm çalacak
-                                //set alarmm1!!!!!!!!!!!
-
-                                mp =  MediaPlayer.create(LifetimeOriginal.this,R.raw.alarmvoice);
-                                mp.setLooping(true);
-                                mp.start();
-                                alarmOnOf.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        mp.setLooping(false);
-                                        mp.stop();
-
-                                    }
-                                });
-
-                            }
-                        }
-                    }
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        Log.w("MatrixPage", "Failed to read value.", databaseError.toException());
-                    }
-                }
-        );
-
+        }
 
 
         Return.setOnClickListener(new View.OnClickListener() {
@@ -347,8 +290,8 @@ public class LifetimeOriginal extends AppCompatActivity {
         routeLineView = new MapboxRouteLineView(options);
         routeLineApi = new MapboxRouteLineApi(options);
 
-        speechApi = new MapboxSpeechApi(LifetimeOriginal.this, getString(R.string.mapbox_access_token), Locale.US.toLanguageTag());
-        mapboxVoiceInstructionsPlayer = new MapboxVoiceInstructionsPlayer(LifetimeOriginal.this, Locale.US.toLanguageTag());
+        //speechApi = new MapboxSpeechApi(LifetimeOriginal.this, getString(R.string.mapbox_access_token), Locale.US.toLanguageTag());
+        //mapboxVoiceInstructionsPlayer = new MapboxVoiceInstructionsPlayer(LifetimeOriginal.this, Locale.US.toLanguageTag());
 
         NavigationOptions navigationOptions = new NavigationOptions.Builder(this).accessToken(getString(R.string.mapbox_access_token)).build();
 
@@ -357,24 +300,9 @@ public class LifetimeOriginal extends AppCompatActivity {
 
         mapboxNavigation.registerRoutesObserver(routesObserver);
         mapboxNavigation.registerLocationObserver(locationObserver);
-        mapboxNavigation.registerVoiceInstructionsObserver(voiceInstructionsObserver);
+        //mapboxNavigation.registerVoiceInstructionsObserver(voiceInstructionsObserver);
 
-        MapboxSoundButton soundButton = findViewById(R.id.soundButton);
-        soundButton.unmute();
 
-        soundButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                isVoiceInstructionsMuted = !isVoiceInstructionsMuted;
-                if (isVoiceInstructionsMuted) {
-                    soundButton.muteAndExtend(1500L);
-                    mapboxVoiceInstructionsPlayer.volume(new SpeechVolume(0f));
-                } else {
-                    soundButton.unmuteAndExtend(1500L);
-                    mapboxVoiceInstructionsPlayer.volume(new SpeechVolume(1f));
-                }
-            }
-        });
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(LifetimeOriginal.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -394,12 +322,13 @@ public class LifetimeOriginal extends AppCompatActivity {
         LocationComponentPlugin locationComponentPlugin = getLocationComponent(mapView);
         getGestures(mapView).addOnMoveListener(onMoveListener);
 
+        /*
         setRoute.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Toast.makeText(LifetimeOriginal.this, "Please select a location in map", Toast.LENGTH_SHORT).show();
             }
-        });
+        });*/
 
         mapView.getMapboxMap().loadStyleUri(Style.TRAFFIC_DAY, new Style.OnStyleLoaded() {
             @Override
@@ -414,26 +343,6 @@ public class LifetimeOriginal extends AppCompatActivity {
                         locationComponentSettings.setEnabled(true);
                         locationComponentSettings.setPulsingEnabled(true);
                         return null;
-                    }
-                });
-                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_pin);
-                AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
-                PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
-                addOnMapClickListener(mapView.getMapboxMap(), new OnMapClickListener() {
-                    @Override
-                    public boolean onMapClick(@NonNull Point point) {
-                        pointAnnotationManager.deleteAll();
-                        PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions().withTextAnchor(TextAnchor.CENTER).withIconImage(bitmap)
-                                .withPoint(point);
-                        pointAnnotationManager.create(pointAnnotationOptions);
-
-                        setRoute.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                fetchRoute(point);
-                            }
-                        });
-                        return true;
                     }
                 });
                 focusLocationBtn.setOnClickListener(new View.OnClickListener() {
@@ -460,26 +369,50 @@ public class LifetimeOriginal extends AppCompatActivity {
         });
     }
 
-    @SuppressLint("MissingPermission")
-    private Point currentLocation(){
+    private Point userPoint;
+    private void geocodeAddress(String address) {
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_pin);
+        AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
+        PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
+        // Set your Mapbox access token here
+        String accessToken = "sk.eyJ1IjoibnVyYmFudWNhbmJheiIsImEiOiJjbHc2NGhuOWUxbDlqMmpwZHB6MThrM2M3In0.f5ZKapBICS8qsCX4S3IDJg";
 
-        LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(LifetimeOriginal.this);
-        locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
+        MapboxGeocoding mapboxGeocoding = MapboxGeocoding.builder()
+                .accessToken(accessToken)
+                .query(address)
+                .build();
+
+        mapboxGeocoding.enqueueCall(new Callback<GeocodingResponse>() {
             @Override
-            public void onSuccess(LocationEngineResult result) {
-                Location locations = result.getLastLocation();
-                double latitude = locations.getLatitude();
-                double longitude = locations.getLongitude();
-                orig= Point.fromLngLat(longitude, latitude);
+            public void onResponse(@NonNull Call<GeocodingResponse> call, @NonNull Response<GeocodingResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    CarmenFeature feature = response.body().features().get(0);
+                    Point point = feature.center();
+                    double latitude = point.latitude();
+                    double longitude = point.longitude();
+                    Point e = Point.fromLngLat(longitude,latitude);
+                    //userPoint = e;
+                    PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions()
+                            .withTextAnchor(TextAnchor.CENTER)
+                            .withIconImage(bitmap)
+                            .withPoint(e);
+                    pointAnnotationManager.create(pointAnnotationOptions);
 
+                    fetchRoute(e);
+
+                    // Save the address and coordinates to the database
+
+                } else {
+                    //Toast.makeText(MatrixPage.this, "No location found for the given address", Toast.LENGTH_SHORT).show();
+                }
             }
+
             @Override
-            public void onFailure(@NonNull Exception exception) {
+            public void onFailure(@NonNull Call<GeocodingResponse> call, @NonNull Throwable t) {
+               // Toast.makeText(MatrixPage.this, "Geocoding request failed", Toast.LENGTH_SHORT).show();
             }
         });
-        return orig;
     }
-
     @SuppressLint("MissingPermission")
     private double calculateSpeed(){
         LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(LifetimeOriginal.this);
@@ -515,13 +448,13 @@ public class LifetimeOriginal extends AppCompatActivity {
         mapboxMatrix.enqueueCall(new Callback<MatrixResponse>() {
             @Override
             public void onResponse(Call<MatrixResponse> call, Response<MatrixResponse> response) {
-                String distanceFormattedValue = null;
                 if (response.isSuccessful() && response.body() != null) {
                     MatrixResponse matrixResponse = response.body();
                     Log.e("MatrixAPI", "Response Body: " + response.body().toString());
                     // Check if destinations and durations are not null and not empty
                     if (matrixResponse.destinations() != null && !matrixResponse.destinations().isEmpty() &&
                             matrixResponse.durations() != null && !matrixResponse.durations().isEmpty()) {
+
                         double distanceBetweenLastAndSecondToLastClickPoint = 0;
                         double totalLineDistance = 0;
 
@@ -533,17 +466,63 @@ public class LifetimeOriginal extends AppCompatActivity {
                         }
                         distanceBetweenLastAndSecondToLastClickPoint=distanceBetweenLastAndSecondToLastClickPoint*1.609344;
                         totalLineDistance = (totalLineDistance*1.609344);
+                        String distanceFormattedValue = String.format("%.2f", totalLineDistance);
 
-                        if(totalLineDistance!=0){
-                            distanceFormattedValue = String.format("%.2f", totalLineDistance);
-                            distance = Double.parseDouble(distanceFormattedValue);
-                        }
-
-
-                        Double time=(totalLineDistance/Speed);
                         Location location = new Location("point_to_location");
                         location.setLatitude(origin.latitude());
                         location.setLongitude(origin.longitude());
+                        //fetchRoute(pairPoints);
+                        Speed = calculateSpeed();
+                        if((Speed <= 5.0) ){
+                            Speed=30.0;
+                        }
+                        else{
+                            Speed = Speed*1.609344;
+                        }
+                        Double time=(totalLineDistance/Speed);
+                        time = time * 60;
+                        String timeFormattedValue = String.format("%.2f", time);
+                        String cleanedMinutesStr = timeFormattedValue.replaceAll(",", "");
+                        cleanedMinutesStr= cleanedMinutesStr.substring(0, cleanedMinutesStr.length() - 2);
+
+                        // Parse the cleaned string to integer
+                        int minutesToAdd = Integer.parseInt(cleanedMinutesStr);
+
+                        Date currentTime = Calendar.getInstance().getTime();
+
+                        // Add the specified number of minutes to the current time
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTime(currentTime);
+                        calendar.add(Calendar.MINUTE, minutesToAdd);
+                        Date updatedTime = calendar.getTime();
+                        //String newTime = 1+timeDisplay();
+                        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+                        String formattedTime = timeFormat.format(updatedTime);
+
+                        remainingDistance.setText("Remaining Distance: \n" + distanceFormattedValue+ " km");
+                        remainingTime.setText("Remaining Time: \n" + timeFormattedValue+ " min");
+                        if (totalLineDistance <= 1) {  // aralarındaki mesafe 1 km kalınca yani yaklaşık 10 -12dk arasında olunca alarm çalacak
+                            //set alarmm1!!!!!!!!!!!
+
+                            mp = MediaPlayer.create(LifetimeOriginal.this, R.raw.alarmvoice);
+                            mp.setLooping(true);
+                            mp.start();
+                            alarmOnOf.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    mp.setLooping(false);
+                                    mp.stop();
+
+                                }
+                            });
+
+                        } else {
+                            //Toast.makeText(AddressActivity.this, "Address not found for user ID: " + userId, Toast.LENGTH_SHORT).show();
+                        }
+                        //Double time=(totalLineDistance/Speed);
+                        //Location location = new Location("point_to_location");
+                        //location.setLatitude(origin.latitude());
+                        //location.setLongitude(origin.longitude());
                         //fetchRoute(pairPoints);
 
                     } else {
@@ -570,8 +549,8 @@ public class LifetimeOriginal extends AppCompatActivity {
             @Override
             public void onSuccess(LocationEngineResult result) {
                 Location location = result.getLastLocation();
-                setRoute.setEnabled(false);
-                setRoute.setText("Fetching route...");
+                //setRoute.setEnabled(false);
+                //setRoute.setText("Fetching route...");
                 RouteOptions.Builder builder = RouteOptions.builder();
                 Point origin = Point.fromLngLat(Objects.requireNonNull(location).getLongitude(), location.getLatitude());
                 builder.coordinatesList(Arrays.asList(origin, point));
@@ -585,14 +564,14 @@ public class LifetimeOriginal extends AppCompatActivity {
                     public void onRoutesReady(@NonNull List<NavigationRoute> list, @NonNull RouterOrigin routerOrigin) {
                         mapboxNavigation.setNavigationRoutes(list);
                         focusLocationBtn.performClick();
-                        setRoute.setEnabled(true);
-                        setRoute.setText("Set route");
+                        //setRoute.setEnabled(true);
+                        //setRoute.setText("Set route");
                     }
 
                     @Override
                     public void onFailure(@NonNull List<RouterFailure> list, @NonNull RouteOptions routeOptions) {
-                        setRoute.setEnabled(true);
-                        setRoute.setText("Set route");
+                        //setRoute.setEnabled(true);
+                        //setRoute.setText("Set route");
                         Toast.makeText(LifetimeOriginal.this, "Route request failed", Toast.LENGTH_SHORT).show();
                     }
 
@@ -601,6 +580,7 @@ public class LifetimeOriginal extends AppCompatActivity {
 
                     }
                 });
+                calculateDistance(origin,point);
             }
 
             @Override
