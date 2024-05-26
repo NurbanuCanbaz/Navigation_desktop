@@ -8,17 +8,24 @@ import static com.mapbox.navigation.base.extensions.RouteOptionsExtensions.apply
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Address;
 import android.location.Location;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
@@ -27,11 +34,12 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineProvider;
@@ -41,10 +49,12 @@ import com.mapbox.api.directions.v5.DirectionsCriteria;
 import com.mapbox.api.directions.v5.models.Bearing;
 import com.mapbox.api.directions.v5.models.RouteOptions;
 import com.mapbox.api.directions.v5.models.VoiceInstructions;
+import com.mapbox.api.geocoding.v5.MapboxGeocoding;
+import com.mapbox.api.geocoding.v5.models.CarmenFeature;
+import com.mapbox.api.geocoding.v5.models.GeocodingResponse;
 import com.mapbox.api.matrix.v1.MapboxMatrix;
 import com.mapbox.api.matrix.v1.models.MatrixResponse;
 import com.mapbox.bindgen.Expected;
-import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
 import com.mapbox.maps.CameraOptions;
 import com.mapbox.maps.EdgeInsets;
@@ -62,31 +72,20 @@ import com.mapbox.maps.plugin.gestures.OnMoveListener;
 import com.mapbox.maps.plugin.locationcomponent.LocationComponentConstants;
 import com.mapbox.maps.plugin.locationcomponent.LocationComponentPlugin;
 import com.mapbox.maps.plugin.locationcomponent.generated.LocationComponentSettings;
-import com.mapbox.navigation.base.formatter.DistanceFormatterOptions;
 import com.mapbox.navigation.base.options.NavigationOptions;
 import com.mapbox.navigation.base.route.NavigationRoute;
 import com.mapbox.navigation.base.route.NavigationRouterCallback;
 import com.mapbox.navigation.base.route.RouterFailure;
 import com.mapbox.navigation.base.route.RouterOrigin;
-import com.mapbox.navigation.base.trip.model.RouteProgress;
 import com.mapbox.navigation.core.MapboxNavigation;
 import com.mapbox.navigation.core.directions.session.RoutesObserver;
 import com.mapbox.navigation.core.directions.session.RoutesUpdatedResult;
-import com.mapbox.navigation.core.formatter.MapboxDistanceFormatter;
 import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp;
 import com.mapbox.navigation.core.trip.session.LocationMatcherResult;
 import com.mapbox.navigation.core.trip.session.LocationObserver;
-import com.mapbox.navigation.core.trip.session.RouteProgressObserver;
 import com.mapbox.navigation.core.trip.session.VoiceInstructionsObserver;
 import com.mapbox.navigation.ui.base.util.MapboxNavigationConsumer;
-import com.mapbox.navigation.ui.maneuver.api.MapboxManeuverApi;
-import com.mapbox.navigation.ui.maneuver.model.Maneuver;
-import com.mapbox.navigation.ui.maneuver.model.ManeuverError;
-import com.mapbox.navigation.ui.maneuver.view.MapboxManeuverView;
 import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider;
-import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowApi;
-import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowView;
-import com.mapbox.navigation.ui.maps.route.arrow.model.RouteArrowOptions;
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi;
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView;
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions;
@@ -100,42 +99,46 @@ import com.mapbox.navigation.ui.voice.model.SpeechError;
 import com.mapbox.navigation.ui.voice.model.SpeechValue;
 import com.mapbox.navigation.ui.voice.model.SpeechVolume;
 import com.mapbox.navigation.ui.voice.view.MapboxSoundButton;
-import com.mapbox.search.autocomplete.PlaceAutocomplete;
-import com.mapbox.search.autocomplete.PlaceAutocompleteSuggestion;
-import com.mapbox.search.ui.adapter.autocomplete.PlaceAutocompleteUiAdapter;
-import com.mapbox.search.ui.view.CommonSearchViewConfiguration;
-import com.mapbox.search.ui.view.SearchResultsView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
 import kotlin.Unit;
-import kotlin.coroutines.Continuation;
-import kotlin.coroutines.CoroutineContext;
-import kotlin.coroutines.EmptyCoroutineContext;
 import kotlin.jvm.functions.Function1;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.mapbox.turf.TurfMeasurement;
+import com.project.navigation.activities.MainActivity;
+import com.project.navigation.activities.SignInActivity;
+
 public class CurrentLocationSystemPage extends AppCompatActivity {
-    private FeatureCollection featureCollection;
-    private RecyclerView recyclerView;
-    private List<Point> searchedPoint=new ArrayList<>();
-    private List<Point> destinationPoints = new ArrayList<>();
-
-
+    private DatabaseReference mDatabase;
+    private Point orig;
+    private Button alarmOnOf, Return;
+    private DatabaseReference mDatabaseCurrent;
 
     MapView mapView;
-    MaterialButton setRoute;
+    //MaterialButton setRoute;
+    private FirebaseAuth.AuthStateListener mAuthListener;
+    double distance, Speed;
+    private MediaPlayer mp;
     FloatingActionButton focusLocationBtn;
     private final NavigationLocationProvider navigationLocationProvider = new NavigationLocationProvider();
     private MapboxRouteLineView routeLineView;
     private MapboxRouteLineApi routeLineApi;
-    private Button Return;
     private final LocationObserver locationObserver = new LocationObserver() {
         @Override
         public void onNewRawLocation(@NonNull Location location) {
@@ -167,6 +170,7 @@ public class CurrentLocationSystemPage extends AppCompatActivity {
     };
     boolean focusLocation = true;
     private MapboxNavigation mapboxNavigation;
+
     private void updateCamera(Point point, Double bearing) {
         MapAnimationOptions animationOptions = new MapAnimationOptions.Builder().duration(1500L).build();
         CameraOptions cameraOptions = new CameraOptions.Builder().center(point).zoom(18.0).bearing(bearing).pitch(45.0)
@@ -174,6 +178,7 @@ public class CurrentLocationSystemPage extends AppCompatActivity {
 
         getCamera(mapView).easeTo(cameraOptions, animationOptions);
     }
+
     private final OnMoveListener onMoveListener = new OnMoveListener() {
         @Override
         public void onMoveBegin(@NonNull MoveGestureDetector moveGestureDetector) {
@@ -200,126 +205,29 @@ public class CurrentLocationSystemPage extends AppCompatActivity {
             }
         }
     });
+    private TextView remainingTime, remainingDistance;
 
-    private MapboxSpeechApi speechApi;
-    private MapboxVoiceInstructionsPlayer mapboxVoiceInstructionsPlayer;
-
-    private MapboxNavigationConsumer<Expected<SpeechError, SpeechValue>> speechCallback = new MapboxNavigationConsumer<Expected<SpeechError, SpeechValue>>() {
-        @Override
-        public void accept(Expected<SpeechError, SpeechValue> speechErrorSpeechValueExpected) {
-            speechErrorSpeechValueExpected.fold(new Expected.Transformer<SpeechError, Unit>() {
-                @NonNull
-                @Override
-                public Unit invoke(@NonNull SpeechError input) {
-                    mapboxVoiceInstructionsPlayer.play(input.getFallback(), voiceInstructionsPlayerCallback);
-                    return Unit.INSTANCE;
-                }
-            }, new Expected.Transformer<SpeechValue, Unit>() {
-                @NonNull
-                @Override
-                public Unit invoke(@NonNull SpeechValue input) {
-                    mapboxVoiceInstructionsPlayer.play(input.getAnnouncement(), voiceInstructionsPlayerCallback);
-                    return Unit.INSTANCE;
-                }
-            });
-        }
-    };
-
-    private MapboxNavigationConsumer<SpeechAnnouncement> voiceInstructionsPlayerCallback = new MapboxNavigationConsumer<SpeechAnnouncement>() {
-        @Override
-        public void accept(SpeechAnnouncement speechAnnouncement) {
-            speechApi.clean(speechAnnouncement);
-        }
-    };
-
-    VoiceInstructionsObserver voiceInstructionsObserver = new VoiceInstructionsObserver() {
-        @Override
-        public void onNewVoiceInstructions(@NonNull VoiceInstructions voiceInstructions) {
-            speechApi.generate(voiceInstructions, speechCallback);
-        }
-    };
-
-    private boolean isVoiceInstructionsMuted = false;
-    private PlaceAutocomplete placeAutocomplete;
-    private SearchResultsView searchResultsView;
-    private PlaceAutocompleteUiAdapter placeAutocompleteUiAdapter;
-    private TextInputEditText searchET;
-    private boolean ignoreNextQueryUpdate = false;
-    private MapboxManeuverView mapboxManeuverView;
-    private MapboxManeuverApi maneuverApi;
-    private MapboxRouteArrowView routeArrowView;
-    private MapboxRouteArrowApi routeArrowApi = new MapboxRouteArrowApi();
-    private RouteProgressObserver routeProgressObserver = new RouteProgressObserver() {
-        @Override
-        public void onRouteProgressChanged(@NonNull RouteProgress routeProgress) {
-            Style style = mapView.getMapboxMap().getStyle();
-            if (style != null) {
-                routeArrowView.renderManeuverUpdate(style, routeArrowApi.addUpcomingManeuverArrow(routeProgress));
-            }
-
-            maneuverApi.getManeuvers(routeProgress).fold(new Expected.Transformer<ManeuverError, Object>() {
-                @NonNull
-                @Override
-                public Object invoke(@NonNull ManeuverError input) {
-                    return new Object();
-                }
-            }, new Expected.Transformer<List<Maneuver>, Object>() {
-                @NonNull
-                @Override
-                public Object invoke(@NonNull List<Maneuver> input) {
-                    mapboxManeuverView.setVisibility(View.VISIBLE);
-                    mapboxManeuverView.renderManeuvers(maneuverApi.getManeuvers(routeProgress));
-                    return new Object();
-                }
-            });
-        }
-    };
-
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_optimal_route);
-
-
+        setContentView(R.layout.activity_current_location_system_page);
+        mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        Return = (Button) findViewById(R.id.Return);
         mapView = findViewById(R.id.mapView);
         focusLocationBtn = findViewById(R.id.focusLocation);
-        setRoute = findViewById(R.id.setRoute);
-        mapboxManeuverView = findViewById(R.id.maneuverView);
-        Return = (Button)findViewById(R.id.Return);
+        //setRoute = findViewById(R.id.setRoute);
 
-
-        maneuverApi = new MapboxManeuverApi(new MapboxDistanceFormatter(new DistanceFormatterOptions.Builder(CurrentLocationSystemPage.this).build()));
-        routeArrowView = new MapboxRouteArrowView(new RouteArrowOptions.Builder(CurrentLocationSystemPage.this).build());
-
-        MapboxRouteLineOptions options = new MapboxRouteLineOptions.Builder(this).withRouteLineResources(new RouteLineResources.Builder().build())
-                .withRouteLineBelowLayerId(LocationComponentConstants.LOCATION_INDICATOR_LAYER).build();
-        routeLineView = new MapboxRouteLineView(options);
-        routeLineApi = new MapboxRouteLineApi(options);
-
-        speechApi = new MapboxSpeechApi(CurrentLocationSystemPage.this, getString(R.string.mapbox_access_token), Locale.US.toLanguageTag());
-        mapboxVoiceInstructionsPlayer = new MapboxVoiceInstructionsPlayer(CurrentLocationSystemPage.this, Locale.US.toLanguageTag());
-
-        NavigationOptions navigationOptions = new NavigationOptions.Builder(this).accessToken(getString(R.string.mapbox_access_token)).build();
-
-        MapboxNavigationApp.setup(navigationOptions);
-        mapboxNavigation = new MapboxNavigation(navigationOptions);
-
-        mapboxNavigation.registerRouteProgressObserver(routeProgressObserver);
-        mapboxNavigation.registerRoutesObserver(routesObserver);
-        mapboxNavigation.registerLocationObserver(locationObserver);
-        mapboxNavigation.registerVoiceInstructionsObserver(voiceInstructionsObserver);
-
-        placeAutocomplete = PlaceAutocomplete.create(getString(R.string.mapbox_access_token));
-        searchET = findViewById(R.id.searchET);
-
-        searchResultsView = findViewById(R.id.search_results_view);
-        searchResultsView.initialize(new SearchResultsView.Configuration(new CommonSearchViewConfiguration()));
-
-        placeAutocompleteUiAdapter = new PlaceAutocompleteUiAdapter(searchResultsView, placeAutocomplete, LocationEngineProvider.getBestLocationEngine(CurrentLocationSystemPage.this));
-
-
-
+        SharedPreferences preferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+        // Use getString with the resource id as default value
+        String defaultAddress = getString(R.string.default_address);
+        String address = preferences.getString("address", defaultAddress);
+        if(address!=null){
+            Toast.makeText(CurrentLocationSystemPage.this, "address: "+ address, Toast.LENGTH_SHORT).show();
+            geocodeAddress(address);
+        }
 
 
         Return.setOnClickListener(new View.OnClickListener() {
@@ -330,63 +238,23 @@ public class CurrentLocationSystemPage extends AppCompatActivity {
                 startActivity(intent);
                 finish();
                 return;
-            }
 
-        });
-
-
-        searchET.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (ignoreNextQueryUpdate) {
-                    ignoreNextQueryUpdate = false;
-                } else {
-                    placeAutocompleteUiAdapter.search(charSequence.toString(), new Continuation<Unit>() {
-                        @NonNull
-                        @Override
-                        public CoroutineContext getContext() {
-                            return EmptyCoroutineContext.INSTANCE;
-                        }
-
-                        @Override
-                        public void resumeWith(@NonNull Object o) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    searchResultsView.setVisibility(View.VISIBLE);
-                                }
-                            });
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
 
             }
         });
 
-        MapboxSoundButton soundButton = findViewById(R.id.soundButton);
-        soundButton.unmute();
-        soundButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                isVoiceInstructionsMuted = !isVoiceInstructionsMuted;
-                if (isVoiceInstructionsMuted) {
-                    soundButton.muteAndExtend(1500L);
-                    mapboxVoiceInstructionsPlayer.volume(new SpeechVolume(0f));
-                } else {
-                    soundButton.unmuteAndExtend(1500L);
-                    mapboxVoiceInstructionsPlayer.volume(new SpeechVolume(1f));
-                }
-            }
-        });
+        MapboxRouteLineOptions options = new MapboxRouteLineOptions.Builder(this).withRouteLineResources(new RouteLineResources.Builder().build())
+                .withRouteLineBelowLayerId(LocationComponentConstants.LOCATION_INDICATOR_LAYER).build();
+        routeLineView = new MapboxRouteLineView(options);
+        routeLineApi = new MapboxRouteLineApi(options);
+
+        NavigationOptions navigationOptions = new NavigationOptions.Builder(this).accessToken(getString(R.string.mapbox_access_token)).build();
+
+        MapboxNavigationApp.setup(navigationOptions);
+        mapboxNavigation = new MapboxNavigation(navigationOptions);
+
+        mapboxNavigation.registerRoutesObserver(routesObserver);
+        mapboxNavigation.registerLocationObserver(locationObserver);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(CurrentLocationSystemPage.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -406,13 +274,6 @@ public class CurrentLocationSystemPage extends AppCompatActivity {
         LocationComponentPlugin locationComponentPlugin = getLocationComponent(mapView);
         getGestures(mapView).addOnMoveListener(onMoveListener);
 
-        setRoute.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Toast.makeText(CurrentLocationSystemPage.this, "Please select a location in map", Toast.LENGTH_SHORT).show();
-            }
-        });
-
         mapView.getMapboxMap().loadStyleUri(Style.TRAFFIC_DAY, new Style.OnStyleLoaded() {
             @Override
             public void onStyleLoaded(@NonNull Style style) {
@@ -428,40 +289,6 @@ public class CurrentLocationSystemPage extends AppCompatActivity {
                         return null;
                     }
                 });
-                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_pin);
-                AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
-                PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
-                addOnMapClickListener(mapView.getMapboxMap(), new OnMapClickListener() {
-
-                    //ALL STATIONS STORED IN  THIS LIST
-
-                    @Override
-                    public boolean onMapClick(@NonNull Point point) {
-                        destinationPoints.add(point);
-
-                        for (Point destPoint : destinationPoints) {
-                            PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions()
-                                    .withTextAnchor(TextAnchor.CENTER)
-                                    .withIconImage(bitmap)
-                                    .withPoint(destPoint);
-                            pointAnnotationManager.create(pointAnnotationOptions);
-                        }
-                        /*
-                        pointAnnotationManager.deleteAll();
-                        PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions().withTextAnchor(TextAnchor.CENTER).withIconImage(bitmap)
-                                .withPoint(point);
-                        pointAnnotationManager.create(pointAnnotationOptions);*/
-
-                        setRoute.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                //fetchRoute(point);
-                                fetchRoute(destinationPoints);
-                            }
-                        });
-                        return true;
-                    }
-                });
                 focusLocationBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -470,49 +297,106 @@ public class CurrentLocationSystemPage extends AppCompatActivity {
                         focusLocationBtn.hide();
                     }
                 });
+            }
+        });
+        mDatabaseCurrent = FirebaseDatabase.getInstance().getReference();
 
-                placeAutocompleteUiAdapter.addSearchListener(new PlaceAutocompleteUiAdapter.SearchListener() {
-                    @Override
-                    public void onSuggestionsShown(@NonNull List<PlaceAutocompleteSuggestion> list) {
+        List<Point> stations = new ArrayList<>();
 
+        // Read latitude and longitude from the database
+        mDatabaseCurrent.child("userAddresses").addValueEventListener(new ValueEventListener() {
+            Point e;
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                    String userId = userSnapshot.getKey(); // Get the user ID
+                    Double latitude = userSnapshot.child("latitude").getValue(Double.class);
+                    Double longitude = userSnapshot.child("longitude").getValue(Double.class);
+                    String userAddress= userSnapshot.child("address").getValue(String.class);
+
+                    e = Point.fromLngLat(longitude, latitude);
+                    if ((latitude != 0 && longitude != 0)&&(latitude != null && longitude != null)) {
+
+                        if(!(userAddress.equals(address))){
+                            Bitmap bitmap_red = BitmapFactory.decodeResource(getResources(), R.drawable.location_pin);
+                            AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
+                            PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
+                            //DATABASE DE KAÇ TANE USER VARSA ONLARIN LOKASYONLARINA NOKTA ATIYORUZ.
+                            PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions()
+                                    .withTextAnchor(TextAnchor.CENTER)
+                                    .withIconImage(bitmap_red)
+                                    .withPoint(e);
+                            pointAnnotationManager.create(pointAnnotationOptions);
+                        }
+
+
+                        stations.add(e);
+                                /*
+                                RouteOptions.Builder builder = RouteOptions.builder();
+                                builder.coordinatesList(stations);
+                                builder.alternatives(true);
+                                builder.waypointNamesList(waypointNames);
+                                builder.profile(DirectionsCriteria.PROFILE_DRIVING);
+
+                                applyDefaultNavigationOptions(builder);*/
+                    } else {
+                        Log.d("MainActivity", "Latitude or Longitude is null for User ID: " + userId);
                     }
+                }
+                fetchRoute(stations);
 
-                    @Override
-                    public void onSuggestionSelected(@NonNull PlaceAutocompleteSuggestion placeAutocompleteSuggestion) {
-                        ignoreNextQueryUpdate = true;
-                        focusLocation = false;
-                        searchET.setText(placeAutocompleteSuggestion.getName());
-                        searchResultsView.setVisibility(View.GONE);
 
-                        pointAnnotationManager.deleteAll();
-                        PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions().withTextAnchor(TextAnchor.CENTER).withIconImage(bitmap)
-                                .withPoint(placeAutocompleteSuggestion.getCoordinate());
-                        pointAnnotationManager.create(pointAnnotationOptions);
-                        updateCamera(placeAutocompleteSuggestion.getCoordinate(), 0.0);
-
-                        setRoute.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                searchedPoint.add(placeAutocompleteSuggestion.getCoordinate());
-                                fetchRoute(searchedPoint);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onPopulateQueryClick(@NonNull PlaceAutocompleteSuggestion placeAutocompleteSuggestion) {
-                        //queryEditText.setText(placeAutocompleteSuggestion.getName());
-                    }
-
-                    @Override
-                    public void onError(@NonNull Exception e) {
-
-                    }
-                });
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.w("MatrixPage", "Failed to read value.", databaseError.toException());
+            }
+        });
+    }
 
 
 
+    private void geocodeAddress(String address) {
 
+        // Set your Mapbox access token here
+        String accessToken = "sk.eyJ1IjoibnVyYmFudWNhbmJheiIsImEiOiJjbHc2NGhuOWUxbDlqMmpwZHB6MThrM2M3In0.f5ZKapBICS8qsCX4S3IDJg";
+
+        MapboxGeocoding mapboxGeocoding = MapboxGeocoding.builder()
+                .accessToken(accessToken)
+                .query(address)
+                .build();
+
+        mapboxGeocoding.enqueueCall(new Callback<GeocodingResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<GeocodingResponse> call, @NonNull Response<GeocodingResponse> response) {
+                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.green_location_pin);
+                AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
+                PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
+                if (response.isSuccessful() && response.body() != null) {
+                    CarmenFeature feature = response.body().features().get(0);
+                    Point point = feature.center();
+                    double latitude = point.latitude();
+                    double longitude = point.longitude();
+                    Point e = Point.fromLngLat(longitude,latitude);
+                    //userPoint = e;
+                    PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions()
+                            .withTextAnchor(TextAnchor.CENTER)
+                            .withIconImage(bitmap)
+                            .withPoint(e);
+                    pointAnnotationManager.create(pointAnnotationOptions);
+
+                    //fetchRoute(e);
+
+                    // Save the address and coordinates to the database
+
+                } else {
+                    //Toast.makeText(MatrixPage.this, "No location found for the given address", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<GeocodingResponse> call, @NonNull Throwable t) {
+                // Toast.makeText(MatrixPage.this, "Geocoding request failed", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -520,13 +404,16 @@ public class CurrentLocationSystemPage extends AppCompatActivity {
     @SuppressLint("MissingPermission")
     private void fetchRoute(List<Point> point) {
         LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(CurrentLocationSystemPage.this);
+
         locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
             @Override
             public void onSuccess(LocationEngineResult result) {
                 Location locations = result.getLastLocation();
-                setRoute.setEnabled(false);
-                setRoute.setText("Fetching route...");
+
+                //setRoute.setEnabled(false);
+                //setRoute.setText("Fetching route...");
                 RouteOptions.Builder builder = RouteOptions.builder();
+                //current location
                 Point origin = Point.fromLngLat(Objects.requireNonNull(locations).getLongitude(), locations.getLatitude());
 
                 List<Point> coord = new ArrayList<>();
@@ -544,30 +431,25 @@ public class CurrentLocationSystemPage extends AppCompatActivity {
                 builder.coordinatesList(coord);
                 builder.alternatives(true);
                 //builder.waypointNamesList(waypointNames);
-                builder.profile(DirectionsCriteria.PROFILE_DRIVING);
+                builder.profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC);
                 builder.bearingsList(bearings);
 
                 applyDefaultNavigationOptions(builder);
-
-                //builder.coordinatesList(Arrays.asList(origin, point));
-                //builder.alternatives(false);
-                //builder.profile(DirectionsCriteria.PROFILE_DRIVING);
-                //builder.bearingsList(Arrays.asList(Bearing.builder().angle(location.getBearing()).degrees(45.0).build(), null));
-                //applyDefaultNavigationOptions(builder);
 
                 mapboxNavigation.requestRoutes(builder.build(), new NavigationRouterCallback() {
                     @Override
                     public void onRoutesReady(@NonNull List<NavigationRoute> list, @NonNull RouterOrigin routerOrigin) {
                         mapboxNavigation.setNavigationRoutes(list);
                         focusLocationBtn.performClick();
-                        setRoute.setEnabled(true);
-                        setRoute.setText("Set route");
+                        //setRoute.setEnabled(true);
+                        //setRoute.setText("Set route");
+
                     }
 
                     @Override
                     public void onFailure(@NonNull List<RouterFailure> list, @NonNull RouteOptions routeOptions) {
-                        setRoute.setEnabled(true);
-                        setRoute.setText("Set route");
+                        //setRoute.setEnabled(true);
+                        //setRoute.setText("Set route");
                         Toast.makeText(CurrentLocationSystemPage.this, "Route request failed", Toast.LENGTH_SHORT).show();
                     }
 
