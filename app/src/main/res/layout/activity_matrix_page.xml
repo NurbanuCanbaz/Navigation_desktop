@@ -37,13 +37,22 @@
             android:editable="false"
             android:textSize="@dimen/_20sdp"
             android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/from"
+            android:layout_width="200dp"
+            android:layout_height="18dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginLeft="10dp"
+            android:text="From"
+            android:editable="false"
+            android:textStyle="bold"/>
 
         <androidx.appcompat.widget.SearchView
             android:id="@+id/searchViewFrom"
             android:layout_width="match_parent"
             android:layout_height="50dp"
+            android:layout_below="@+id/from"
             android:layout_alignParentEnd="true"
-            android:layout_marginTop="76dp"
             android:background="@drawable/rectangular_graybackgraund"
             android:backgroundTint="@color/light_gray"
             android:iconifiedByDefault="false"
@@ -61,6 +70,15 @@
             android:layout_below="@+id/searchViewFrom"
             android:visibility="gone"
             />
+        <TextView
+            android:id="@+id/to"
+            android:layout_width="200dp"
+            android:layout_height="18dp"
+            android:layout_marginLeft="10dp"
+            android:text="To"
+            android:layout_below="@+id/ListViewFrom"
+            android:editable="false"
+            android:textStyle="bold"/>
 
         <androidx.appcompat.widget.SearchView
             android:id="@+id/searchViewTo"
@@ -70,11 +88,10 @@
             android:layout_marginStart="8dp"
             android:layout_marginEnd="100dp"
             android:queryHint="From"
-            android:layout_marginTop="20dp"
             android:background="@drawable/rectangular_graybackgraund"
             android:backgroundTint="@color/light_gray"
             app:layout_constraintTop_toBottomOf="@id/searchViewFrom"
-            android:layout_below="@+id/ListViewFrom"
+            android:layout_below="@+id/to"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
 
@@ -85,7 +102,6 @@
             android:id="@+id/ListViewTo"
             android:visibility="gone"
             android:layout_below="@+id/searchViewTo"
-
             />
 
         <Button
@@ -93,25 +109,26 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/ListViewTo"
-            android:layout_marginLeft="250dp"
+            android:layout_marginLeft="305dp"
+            android:layout_marginTop="10dp"
             android:text="Submit" />
-
+<!---
         <Button
             android:id="@+id/buttonCalculate"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:text="Calculate Distance"
             android:layout_below="@+id/ListViewTo"
-            android:background="@drawable/baseline_add_24"/>
-
+            android:background="@drawable/baseline_add_24"/>-->
+<!--
         <TextView
             android:id="@+id/currentTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="86dp"
-            android:layout_below="@+id/buttonCalculate"
-            android:text="Current Time:"
-            android:textSize="18sp"/>
+            android:layout_below="@+id/submitButton"
+            android:textSize="18sp"/>-->
+        <!--
         <TextView
             android:id="@+id/textViewResult"
             android:layout_width="match_parent"
@@ -119,7 +136,47 @@
             android:layout_marginTop="16dp"
             android:layout_below="@+id/buttonCalculate"
             android:text="Result:"
+            android:textSize="18sp"/>-->
+        <LinearLayout
+            android:layout_width="500dp"
+            android:layout_height="50dp"
+            android:layout_below="@+id/submitButton"
+            android:layout_marginTop="10dp"
+            android:id="@+id/layout">
+            <TextView
+                android:id="@+id/DepartureTime"
+                android:layout_width="180dp"
+                android:layout_height="50dp"
+                android:layout_below="@+id/buttonCalculate"
+                android:background="@drawable/rectangular_graybackgraund"
+                android:text="Departure Time:"
+                android:textAlignment="center"
+                android:textSize="18sp"/>
+            <TextView
+                android:id="@+id/ArrivalTime"
+                android:layout_width="210dp"
+                android:layout_height="50dp"
+                android:background="@drawable/rectangular_graybackgraund"
+                android:layout_marginLeft="10dp"
+                android:text="Arrival Time:"
+                android:textAlignment="center"
+
+                android:layout_below="@+id/buttonCalculate"
+                android:textSize="18sp"/>
+
+        </LinearLayout>
+        <TextView
+            android:id="@+id/RemainingTime"
+            android:layout_marginTop="10dp"
+            android:layout_width="180dp"
+            android:layout_height="50dp"
+            android:text="Remaining Time:"
+            android:textAlignment="center"
+
+            android:background="@drawable/rectangular_graybackgraund"
+            android:layout_below="@+id/layout"
             android:textSize="18sp"/>
+        <!--
         <TextView
             android:id="@+id/lngLnt"
             android:layout_width="match_parent"
@@ -127,7 +184,7 @@
             android:layout_marginTop="116dp"
             android:layout_below="@+id/buttonCalculate"
             android:text="Longitude:"
-            android:textSize="18sp"/>
+            android:textSize="18sp"/>-->
      </RelativeLayout>
     </ScrollView>
 

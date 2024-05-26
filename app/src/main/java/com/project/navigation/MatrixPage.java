@@ -161,25 +161,19 @@ public class MatrixPage extends AppCompatActivity {
     private List<Point> searchedPoint=new ArrayList<>();
     private List<Point> destinationPoints = new ArrayList<>();
     private  ArrayList<String> stationNames= new ArrayList<>();
-
     private Location previousLocation;
     private double totalDistance;
     private long previousUpdateTimeMillis;
-
-
     private Double speed;
     private double Speed;
-
     MapView mapView;
     private MapboxMap mapboxMap;
-
     MaterialButton setRoute;
     FloatingActionButton focusLocationBtn;
     private final NavigationLocationProvider navigationLocationProvider = new NavigationLocationProvider();
     private MapboxRouteLineView routeLineView;
     private MapboxRouteLineApi routeLineApi;
-    private Button Return;
-
+    private Button Return,buttonSubmit;
     private TextView timeTextView;
     private Handler handler = new Handler();
     private Runnable runnable;
@@ -245,6 +239,13 @@ public class MatrixPage extends AppCompatActivity {
     private String timeDisplay(){
         Date currentTime = Calendar.getInstance().getTime();
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+        String formattedTime = timeFormat.format(currentTime);
+        return formattedTime;
+
+    }
+    private String timeDisplayMinue(){
+        Date currentTime = Calendar.getInstance().getTime();
+        SimpleDateFormat timeFormat = new SimpleDateFormat("mm");
         String formattedTime = timeFormat.format(currentTime);
         return formattedTime;
 
@@ -342,9 +343,8 @@ public class MatrixPage extends AppCompatActivity {
     private EditText editTextOrigin;
     private EditText editTextDestination;
     private Button buttonCalculate;
-    private TextView textViewResult,lngLt;
+    private TextView textViewResult,lngLt, DepartureTime, ArrivalTime, RemainingTime;
     private TextView timeCurrentResult;
-
     private PlaceAutocomplete placeAutocomplete;
     private SearchResultsView searchResultsView;
     private SearchView searchViewFrom, searchViewTo;
@@ -415,52 +415,53 @@ public class MatrixPage extends AppCompatActivity {
         //searchResultsView.initialize(new SearchResultsView.Configuration(new CommonSearchViewConfiguration()));
         //placeAutocompleteUiAdapter = new PlaceAutocompleteUiAdapter(searchResultsView, placeAutocomplete, LocationEngineProvider.getBestLocationEngine(MatrixPage.this));
         mDatabase = FirebaseDatabase.getInstance().getReference();
+        buttonSubmit=(Button) findViewById(R.id.submitButton);
+        //buttonCalculate = findViewById(R.id.buttonCalculate);
+        //textViewResult = findViewById(R.id.textViewResult);
+        ArrivalTime = findViewById(R.id.ArrivalTime);
+        DepartureTime = findViewById(R.id.DepartureTime);
+        RemainingTime = findViewById(R.id.RemainingTime);
 
-        buttonCalculate = findViewById(R.id.buttonCalculate);
-        textViewResult = findViewById(R.id.textViewResult);
-        lngLt = findViewById(R.id.lngLnt);
-        timeCurrentResult=findViewById(R.id.currentTime);
+        //lngLt = findViewById(R.id.lngLnt);
+        //timeCurrentResult=findViewById(R.id.currentTime);
+        //timeCurrentResult.setText("Time: " +  timeDisplay());
 
-
-
-        timeCurrentResult.setText("Time: " +  timeDisplay());
         List<Point> stations = new ArrayList<>();
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_pin);
+        AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
+        PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
         // Read latitude and longitude from the database
-        mDatabase.child("userAddresses").addValueEventListener(
-                new ValueEventListener() {
-                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_pin);
-                    AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
-                    PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        mDatabase.child("userAddresses").addValueEventListener(new ValueEventListener() {
+            Point e;
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                    i += 1;
+                    String userId = userSnapshot.getKey(); // Get the user ID
+                    Double latitude = userSnapshot.child("latitude").getValue(Double.class);
+                    Double longitude = userSnapshot.child("longitude").getValue(Double.class);
+                    e = Point.fromLngLat(longitude, latitude);
+                    if ((latitude != 0 && longitude != 0)&&(latitude != null && longitude != null)) {
+                        //to ensure that we have received the right data
+                        //Toast.makeText(MatrixPage.this, "latitude: "+latitude, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(MatrixPage.this, "longitude: "+longitude, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(MatrixPage.this, "point: "+e, Toast.LENGTH_SHORT).show();
+                        //to see if ı am taking the rigth latitude and rigth longitude.
+                        //lngLt.setText("Latitude: " + latitude + ", Longitude: " + longitude);
+                        //Point from= (latitude,longitude);
+                        String placeName = "Station " + i;
+                        //List<String> waypointNames = Arrays.asList("Current Location", placeName);
+                        //Point to=();
+                        //calculateDistance(from,to);
 
-                        for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
-                            i+=1;
-                            String userId = userSnapshot.getKey(); // Get the user ID
-                            //Point e = Point.fromLngLat(userSnapshot.child("latitude").getValue(Double.class), userSnapshot.child("longitude").getValue(Double.class));
-                            Double latitude = userSnapshot.child("latitude").getValue(Double.class);
-                            Double longitude = userSnapshot.child("longitude").getValue(Double.class);
-                            if (latitude != null && longitude != null) {
-                                Point e = Point.fromLngLat(longitude,latitude);
+                        //DATABASE DE KAÇ TANE USER VARSA ONLARIN LOKASYONLARINA NOKTA ATIYORUZ.
+                        PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions()
+                                .withTextAnchor(TextAnchor.CENTER)
+                                .withIconImage(bitmap)
+                                .withPoint(e);
+                        pointAnnotationManager.create(pointAnnotationOptions);
 
-                                //System.out.println("Latitude:"+latitude);
-                                lngLt.setText("Latitude: " + latitude + ", Longitude: " + longitude);
-                                //Point from= (latitude,longitude);
-                                String placeName= "Station " + i;
-                                //List<String> waypointNames = Arrays.asList("Current Location", placeName);
-
-                                //Point to=();
-                                //calculateDistance(from,to);
-
-
-
-                                PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions()
-                                        .withTextAnchor(TextAnchor.CENTER)
-                                        .withIconImage(bitmap)
-                                        .withPoint(e);
-                                pointAnnotationManager.create(pointAnnotationOptions);
-
-                                stations.add(e);
+                        stations.add(e);
                                 /*
                                 RouteOptions.Builder builder = RouteOptions.builder();
                                 builder.coordinatesList(stations);
@@ -469,22 +470,19 @@ public class MatrixPage extends AppCompatActivity {
                                 builder.profile(DirectionsCriteria.PROFILE_DRIVING);
 
                                 applyDefaultNavigationOptions(builder);*/
-                            } else {
-                                Log.d("MainActivity", "Latitude or Longitude is null for User ID: " + userId);
-                            }
-                        }
-                        fetchRoute(stations);
-
-
-                    }
-
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        Log.w("MatrixPage", "Failed to read value.", databaseError.toException());
+                    } else {
+                        Log.d("MainActivity", "Latitude or Longitude is null for User ID: " + userId);
                     }
                 }
-        );
+                fetchRoute(stations);
+
+
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.w("MatrixPage", "Failed to read value.", databaseError.toException());
+            }
+        });
 
 
 
@@ -595,7 +593,7 @@ public class MatrixPage extends AppCompatActivity {
                 SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
                 String formattedTime = timeFormat.format(now);
                 // Update the TextView
-                timeCurrentResult.setText(formattedTime);
+                //timeCurrentResult.setText(formattedTime);
                 // Re-run the runnable every second
                 handler.postDelayed(this, 1000);
             }
@@ -721,13 +719,14 @@ public class MatrixPage extends AppCompatActivity {
                     public boolean onMapClick(@NonNull Point point) {
                         destinationPoints.add(point);
 
+                        /*
                         for (Point destPoint : destinationPoints) {
                             PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions()
                                     .withTextAnchor(TextAnchor.CENTER)
                                     .withIconImage(bitmap)
                                     .withPoint(destPoint);
                             pointAnnotationManager.create(pointAnnotationOptions);
-                        }
+                        }*/
                         /*
                         pointAnnotationManager.deleteAll();
                         PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions().withTextAnchor(TextAnchor.CENTER).withIconImage(bitmap)
@@ -839,7 +838,7 @@ public class MatrixPage extends AppCompatActivity {
                         setRoute.setEnabled(true);
                         setRoute.setText("Set route");
 
-                        buttonCalculate.setOnClickListener(new View.OnClickListener() {
+                        buttonSubmit.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 for(int i=0;i<coord.size();i++){
@@ -879,7 +878,7 @@ public class MatrixPage extends AppCompatActivity {
             public void onSuccess(LocationEngineResult result) {
                 Location locations = result.getLastLocation();
                 Speed = result.getLastLocation().getSpeed();
-                Toast.makeText(MatrixPage.this, "Speed: " +Speed, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MatrixPage.this, "Speed: " +Speed, Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onFailure(@NonNull Exception exception) {
@@ -926,7 +925,7 @@ public class MatrixPage extends AppCompatActivity {
                         location.setLongitude(origin.longitude());
                         //fetchRoute(pairPoints);
                         Speed = calculateSpeed();
-                        if((Speed == 0.0) ){
+                        if((Speed <= 5.0) ){
                             Speed=30.0;
                         }
                         else{
@@ -935,8 +934,28 @@ public class MatrixPage extends AppCompatActivity {
                         Double time=(totalLineDistance/Speed);
                         time = time * 60;
                         String timeFormattedValue = String.format("%.2f", time);
+                        String cleanedMinutesStr = timeFormattedValue.replaceAll(",", "");
+                        cleanedMinutesStr= cleanedMinutesStr.substring(0, cleanedMinutesStr.length() - 2);
+
+                        // Parse the cleaned string to integer
+                        int minutesToAdd = Integer.parseInt(cleanedMinutesStr);
+
+                        Date currentTime = Calendar.getInstance().getTime();
+
+                        // Add the specified number of minutes to the current time
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTime(currentTime);
+                        calendar.add(Calendar.MINUTE, minutesToAdd);
+                        Date updatedTime = calendar.getTime();
+                            //String newTime = 1+timeDisplay();
+                        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+                        String formattedTime = timeFormat.format(updatedTime);
+
                         if(totalLineDistance!=0){
-                            textViewResult.setText("Distance: " + distanceFormattedValue + " km\nDuration: " + timeFormattedValue +"min\n" +" Speed :" + Speed);
+                            //textViewResult.setText("Distance: " + distanceFormattedValue + " km\nDuration: " + timeFormattedValue +"min\n" +" Speed :" + Speed);
+                            DepartureTime.setText("Departure Time:\n"+timeDisplay());
+                            ArrivalTime.setText("Arrival Time:\n" + formattedTime );
+                            RemainingTime.setText("Remaining Time:\n"+cleanedMinutesStr +" min\n" );
 
                         }
 
