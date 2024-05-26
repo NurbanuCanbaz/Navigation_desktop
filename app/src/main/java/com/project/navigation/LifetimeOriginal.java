@@ -422,8 +422,8 @@ public class LifetimeOriginal extends AppCompatActivity {
                 Location locations = result.getLastLocation();
 
                 Speed = result.getLastLocation().getSpeed();
-                Toast.makeText(LifetimeOriginal.this, "Speed: " +Speed, Toast.LENGTH_SHORT).show();
-                Toast.makeText(LifetimeOriginal.this, "Origin: " +orig, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(LifetimeOriginal.this, "Speed: " +Speed, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(LifetimeOriginal.this, "Origin: " +orig, Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onFailure(@NonNull Exception exception) {
