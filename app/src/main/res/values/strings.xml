@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Navigation</string>
-    <string name="mapbox_access_token">sk.eyJ1IjoibnVyYmFudWNhbmJheiIsImEiOiJjbHc2NGhuOWUxbDlqMmpwZHB6MThrM2M3In0.f5ZKapBICS8qsCX4S3IDJg</string>
+    <string name="mapbox_access_token">sk.eyJ1IjoiemV5Z25jeSIsImEiOiJjbHdvbzNrdzYxMGJyMmpyejJ5cjc1YWlhIn0.oj2CyXZbYL6BKDEkctFXAg</string>
 
     <string name="name">Name</string>
     <string name="welcome_back_to_routemapp">Welcome To RouteMApp</string>
