@@ -95,7 +95,7 @@ public class ChangeAddressPage extends AppCompatActivity {
 
     private void geocodeAddress(String address) {
         // Set your Mapbox access token here
-        String accessToken = "sk.eyJ1IjoibnVyYmFudWNhbmJheiIsImEiOiJjbHc2NGhuOWUxbDlqMmpwZHB6MThrM2M3In0.f5ZKapBICS8qsCX4S3IDJg";
+        String accessToken = "sk.eyJ1IjoiemV5Z25jeSIsImEiOiJjbHdvbzNrdzYxMGJyMmpyejJ5cjc1YWlhIn0.oj2CyXZbYL6BKDEkctFXAg";
 
         MapboxGeocoding mapboxGeocoding = MapboxGeocoding.builder()
                 .accessToken(accessToken)
