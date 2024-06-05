@@ -1,8 +1,6 @@
 package com.project.navigation;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -16,8 +14,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.mapbox.api.geocoding.v5.MapboxGeocoding;
 import com.mapbox.api.geocoding.v5.models.CarmenFeature;
 import com.mapbox.api.geocoding.v5.models.GeocodingResponse;
@@ -37,7 +38,6 @@ public class ChangeAddressPage extends AppCompatActivity {
     private EditText newAddressEditText;
     private Button saveChangesButton, Return;
     private DatabaseReference addressRef;
-    public String newAddresses;
     private String userId; // User ID obtained from PreferenceManager
 
     @Override
@@ -56,6 +56,9 @@ public class ChangeAddressPage extends AppCompatActivity {
         // Get the user ID from SharedPreferences
         userId = new PreferenceManager(getApplicationContext()).getString(Constants.KEY_USER_ID);
 
+        // Load the current address from Firebase
+        loadCurrentAddress();
+
         // Set onClickListener for Save Changes button
         saveChangesButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,25 +75,34 @@ public class ChangeAddressPage extends AppCompatActivity {
                 finish();
             }
         });
-
-
     }
+
+    private void loadCurrentAddress() {
+        DatabaseReference userAddressRef = addressRef.child(userId);
+        userAddressRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    String currentAddress = dataSnapshot.child("address").getValue(String.class);
+                    newAddressEditText.setText(currentAddress);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(ChangeAddressPage.this, "Failed to load address: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void saveChanges() {
         String newAddress = newAddressEditText.getText().toString().trim();
 
         if (!newAddress.isEmpty()) {
-
-            SharedPreferences preferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("address", newAddress);
-            editor.commit(); // Use apply() for asynchronous save, commit() for synchronous save
             geocodeAddress(newAddress);
-
         } else {
             Toast.makeText(ChangeAddressPage.this, "Please enter a new address", Toast.LENGTH_SHORT).show();
         }
-
-
     }
 
     private void geocodeAddress(String address) {
@@ -148,5 +160,12 @@ public class ChangeAddressPage extends AppCompatActivity {
                         Toast.makeText(ChangeAddressPage.this, "Failed to save address: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
            });
+    }
+    @Override
+    public void onBackPressed() {
+        // do something on back.
+        super.onBackPressed();
+        startActivity(new Intent(ChangeAddressPage.this, Dashboard.class));
+        return;
     }
 }

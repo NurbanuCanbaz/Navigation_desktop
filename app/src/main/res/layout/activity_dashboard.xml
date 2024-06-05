@@ -61,14 +61,15 @@
                     android:layout_width="80dp"
                     android:layout_height="80dp"
                     android:layout_gravity="center_horizontal"
-                    android:src="@drawable/baseline_notifications_active_24" />
+                    android:src="@drawable/baseline_directions_bus_24" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:text="Notification"
+                    android:text="Stations To Travel"
                     android:textSize="18sp"
+                    android:textAlignment="center"
                     android:textStyle="bold" />
 
             </LinearLayout>
@@ -101,7 +102,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:text="Optimal     Route"
+                    android:text="Search To Go Elsewhere"
                     android:textSize="18sp"
                     android:textAlignment="center"
                     android:textStyle="bold" />
@@ -136,7 +137,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:text="Current Location"
+                    android:text="Where Am I "
                     android:textAlignment="center"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -207,7 +208,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:text="LifeTime"
+                    android:text="How Long To Service Arrive"
+                    android:textAlignment="center"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -242,7 +244,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:text="ChatBox"
+                    android:text="Message"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -316,18 +318,20 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:text="Suggestion"
+                    android:textAlignment="center"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+        <!--
         <Button
             android:id="@+id/Matrix"
             android:layout_width="70dp"
             android:layout_height="50dp"
             android:background="@drawable/arrow_back_24"
 
-            />
+            />-->
 
 
 

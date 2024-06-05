@@ -24,7 +24,6 @@ public class HowToSystemPage extends AppCompatActivity {
         setContentView(R.layout.activity_how_to_system_page);
 
         // Initialize buttons
-        Button returnButton = findViewById(R.id.returnButton);
         Button markAbsentButton = findViewById(R.id.markAbsentButton);
         Button changeAddressButton = findViewById(R.id.changeAddressButton);
         Button changeLocationButton = findViewById(R.id.changeLocationButton);
@@ -36,20 +35,7 @@ public class HowToSystemPage extends AppCompatActivity {
         buttons.add(changeLocationButton);
 
         // Set click listeners for each button
-        Return = (Button) findViewById(R.id.returnButton);
 
-        Return.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(HowToSystemPage.this, Dashboard.class);
-                startActivity(intent);
-                finish();
-                return;
-
-
-            }
-        });
 
         markAbsentButton.setOnClickListener(v -> openYouTubeVideo("https://youtu.be/XaF42xeAjXg?si=QvoP4lYo0INTHyOm"));
         changeAddressButton.setOnClickListener(v -> openYouTubeVideo("https://www.youtube.com/watch?v=c3TVR54YxQ8&list=RDc3TVR54YxQ8&start_radio=1"));

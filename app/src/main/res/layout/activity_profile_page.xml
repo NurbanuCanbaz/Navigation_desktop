@@ -10,35 +10,18 @@
     android:background="#efe7da"
     >
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|left"
-        android:orientation="horizontal"
-        android:layout_marginTop="40dp">
 
-        <Button
-            android:id="@+id/Return"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start|center"
-            android:layout_marginLeft="10dp"
-            android:backgroundTint="#88B29079"
-            android:drawableLeft="@drawable/arrow_back_24"
-            android:textAlignment="center"
-            android:textColor="#FFFFFF"
-            android:textSize="40px" />
 
-        <TextView
-            android:layout_width="240dp"
-            android:layout_height="match_parent"
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
             android:backgroundTint="#EFEFEF"
             android:gravity="center"
             android:text="Profile"
             android:textColor="#000000"
             android:textSize="60px" />
 
-    </LinearLayout>
+
 
 
     <LinearLayout
@@ -51,8 +34,8 @@
 
         <com.makeramen.roundedimageview.RoundedImageView
             android:id="@+id/imageProfile"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
             android:layout_marginLeft="@dimen/_16sdp"
             android:background="@drawable/background_icon"
             android:scaleType="centerCrop"
@@ -60,7 +43,7 @@
         <TextView
             android:id="@+id/textName"
             android:layout_width="300dp"
-            android:layout_height="50dp"
+            android:layout_height="70dp"
             android:ellipsize="end"
             android:gravity="center"
             android:maxLines="1"
@@ -117,20 +100,15 @@
         android:backgroundTint="#6E260E"/>
 
 
-
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/imageSignOut"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_marginEnd="@dimen/_16sdp"
-        android:layout_marginRight="@dimen/_16sdp"
         android:background="@drawable/background_icon"
         android:padding="@dimen/_6sdp"
         android:src="@drawable/ic_logout"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:tint="#88B29079" />
-
+        app:layout_constraintTop_toTopOf="parent" />
 
 
 </LinearLayout>

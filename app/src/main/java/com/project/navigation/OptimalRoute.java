@@ -286,7 +286,6 @@ public class OptimalRoute extends AppCompatActivity {
         focusLocationBtn = findViewById(R.id.focusLocation);
         setRoute = findViewById(R.id.setRoute);
         mapboxManeuverView = findViewById(R.id.maneuverView);
-        Return = (Button)findViewById(R.id.Return);
 
 
         maneuverApi = new MapboxManeuverApi(new MapboxDistanceFormatter(new DistanceFormatterOptions.Builder(OptimalRoute.this).build()));
@@ -320,19 +319,6 @@ public class OptimalRoute extends AppCompatActivity {
 
 
 
-
-
-        Return.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(OptimalRoute.this, Dashboard.class);
-                startActivity(intent);
-                finish();
-                return;
-            }
-
-        });
 
 
         searchET.addTextChangedListener(new TextWatcher() {

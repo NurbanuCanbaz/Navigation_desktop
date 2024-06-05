@@ -215,7 +215,6 @@ public class CurrentLocationSystemPage extends AppCompatActivity {
         setContentView(R.layout.activity_current_location_system_page);
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        Return = (Button) findViewById(R.id.Return);
         mapView = findViewById(R.id.mapView);
         focusLocationBtn = findViewById(R.id.focusLocation);
         //setRoute = findViewById(R.id.setRoute);
@@ -230,18 +229,6 @@ public class CurrentLocationSystemPage extends AppCompatActivity {
         }
 
 
-        Return.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(CurrentLocationSystemPage.this, Dashboard.class);
-                startActivity(intent);
-                finish();
-                return;
-
-
-            }
-        });
 
         MapboxRouteLineOptions options = new MapboxRouteLineOptions.Builder(this).withRouteLineResources(new RouteLineResources.Builder().build())
                 .withRouteLineBelowLayerId(LocationComponentConstants.LOCATION_INDICATOR_LAYER).build();
