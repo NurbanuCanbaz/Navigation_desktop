@@ -41,7 +41,6 @@ public class ProfilePage extends AppCompatActivity {
         bindingProfile = ActivityProfilePageBinding.inflate(getLayoutInflater());
         setContentView(bindingProfile.getRoot());
 
-        Return = (Button)findViewById(R.id.Return);
         SignOut = (AppCompatImageView) findViewById(R.id.imageSignOut);
         ProfileImage = (RoundedImageView) findViewById(R.id.imageProfile);
         preferenceManager = new PreferenceManager(getApplicationContext());
@@ -117,17 +116,7 @@ public class ProfilePage extends AppCompatActivity {
         });
 
 
-        Return.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                Intent intent = new Intent(ProfilePage.this, Dashboard.class);
-                startActivity(intent);
-                finish();
-                return;
-            }
-
-        });
 
         SignOut.setOnClickListener(new View.OnClickListener() {
             @Override

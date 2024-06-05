@@ -10,21 +10,12 @@
         android:layout_width="500dp"
         android:layout_height="300dp"
         android:background="#efe7da">
-        <Button
-            android:id="@+id/Return"
-            android:layout_width="58dp"
-            android:layout_height="48dp"
-            android:layout_gravity="start|center"
-            android:layout_marginLeft="10dp"
-            android:backgroundTint="#88B29079"
-            android:drawableLeft="@drawable/arrow_back_24"
-            android:textAlignment="center"
-            android:textColor="#FFFFFF"
-            android:textSize="40px" />
+
         <TextView
             android:id="@+id/alarmText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:textAlignment="center"
             android:text="Service Is Almost There"
             android:layout_marginTop="20dp"
             android:layout_centerHorizontal="true"

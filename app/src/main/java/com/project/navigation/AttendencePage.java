@@ -36,19 +36,8 @@ public class AttendencePage extends AppCompatActivity {
         calendarView = findViewById(R.id.calendarView);
         checkBoxAbsent = findViewById(R.id.checkBoxAbsent);
         btnConfirmChanges = findViewById(R.id.btnConfirmChanges);
-        Return = (Button) findViewById(R.id.Return);
 
-        Return.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                Intent intent = new Intent(AttendencePage.this, ProfilePage.class);
-                startActivity(intent);
-                finish();
-                return;
-            }
-
-        });
 
         // Initialize Firebase reference
         attendanceRef = FirebaseDatabase.getInstance().getReference().child("attendance");

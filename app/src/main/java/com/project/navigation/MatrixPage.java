@@ -947,7 +947,7 @@ public class MatrixPage extends AppCompatActivity {
                         calendar.setTime(currentTime);
                         calendar.add(Calendar.MINUTE, minutesToAdd);
                         Date updatedTime = calendar.getTime();
-                            //String newTime = 1+timeDisplay();
+                        //String newTime = 1+timeDisplay();
                         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
                         String formattedTime = timeFormat.format(updatedTime);
 

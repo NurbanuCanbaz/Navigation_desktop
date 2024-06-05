@@ -35,7 +35,7 @@ public class Dashboard extends AppCompatActivity {
         Profile = (ImageView) findViewById(R.id.Profile);
         Suggestion = (ImageView) findViewById(R.id.Suggestion);
         HowTo = (ImageView) findViewById(R.id.HowTo);
-        Matrix = (Button) findViewById(R.id.Matrix);
+        //Matrix = (Button) findViewById(R.id.Matrix);
 
 
         OptimalRoute.setOnClickListener(new View.OnClickListener() {
@@ -64,6 +64,7 @@ public class Dashboard extends AppCompatActivity {
             }
         });
 
+        /*
         Matrix.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -75,7 +76,7 @@ public class Dashboard extends AppCompatActivity {
 
 
             }
-        });
+        });*/
 
 
 

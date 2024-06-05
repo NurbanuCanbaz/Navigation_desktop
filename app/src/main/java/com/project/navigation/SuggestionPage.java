@@ -31,7 +31,6 @@ public class SuggestionPage extends AppCompatActivity {
         plateNumberEditText = findViewById(R.id.plateNumberEditText);
         suggestionEditText = findViewById(R.id.suggestionEditText);
         submitButton = findViewById(R.id.submitButton);
-        returnButton = findViewById(R.id.returnButton);
 
         // Set click listener for submit button
         submitButton.setOnClickListener(new View.OnClickListener() {
@@ -67,17 +66,6 @@ public class SuggestionPage extends AppCompatActivity {
         // Set click listener for return button
 
 
-        returnButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(SuggestionPage.this, Dashboard.class);
-                startActivity(intent);
-                finish();
-                return;
-            }
-
-        });
 
     }
     @Override

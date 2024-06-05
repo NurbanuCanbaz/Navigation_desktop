@@ -1,41 +1,272 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".NotificationSystemPage"
-    android:background="#efe7da">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".NotificationSystemPage">
 
-    <LinearLayout
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:background="#efe7da"
+        android:scrollbarSize="15dp"
+        android:scrollbarTrackVertical="@drawable/scrollview_track"
+        android:scrollbarThumbVertical="@drawable/scrollview"
+        >
+
+
+        <RelativeLayout
+            android:layout_width="500dp"
+            android:layout_height="400dp">
+
+
+
+            <TextView
+                android:id="@+id/from"
+                android:layout_width="200dp"
+                android:layout_height="18dp"
+                android:layout_marginTop="50dp"
+                android:layout_marginLeft="10dp"
+                android:text="From"
+                android:editable="false"
+                android:textStyle="bold"/>
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/searchViewFrom"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_below="@+id/from"
+                android:layout_alignParentEnd="true"
+                android:background="@drawable/rectangular_graybackgraund"
+                android:backgroundTint="@color/light_gray"
+                android:iconifiedByDefault="false"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="100dp"
+                android:queryHint="From"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/Return" />
+
+            <ListView
+                android:layout_width="400dp"
+                android:layout_height="400dp"
+                android:id="@+id/ListViewFrom"
+                android:layout_below="@+id/searchViewFrom"
+                android:visibility="gone"
+                />
+            <TextView
+                android:id="@+id/to"
+                android:layout_width="200dp"
+                android:layout_height="18dp"
+                android:layout_marginLeft="10dp"
+                android:text="To"
+                android:layout_below="@+id/ListViewFrom"
+                android:editable="false"
+                android:textStyle="bold"/>
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/searchViewTo"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:iconifiedByDefault="false"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="100dp"
+                android:queryHint="From"
+                android:background="@drawable/rectangular_graybackgraund"
+                android:backgroundTint="@color/light_gray"
+                app:layout_constraintTop_toBottomOf="@id/searchViewFrom"
+                android:layout_below="@+id/to"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+
+                />
+            <ListView
+                android:layout_width="400dp"
+                android:layout_height="400dp"
+                android:id="@+id/ListViewTo"
+                android:visibility="gone"
+                android:layout_below="@+id/searchViewTo"
+                />
+
+            <Button
+                android:id="@+id/submitButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/ListViewTo"
+                android:layout_marginLeft="305dp"
+                android:layout_marginTop="10dp"
+                android:text="Submit" />
+            <!---
+                    <Button
+                        android:id="@+id/buttonCalculate"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:text="Calculate Distance"
+                        android:layout_below="@+id/ListViewTo"
+                        android:background="@drawable/baseline_add_24"/>-->
+            <!--
+                    <TextView
+                        android:id="@+id/currentTime"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="86dp"
+                        android:layout_below="@+id/submitButton"
+                        android:textSize="18sp"/>-->
+            <!--
+            <TextView
+                android:id="@+id/textViewResult"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_below="@+id/buttonCalculate"
+                android:text="Result:"
+                android:textSize="18sp"/>-->
+            <LinearLayout
+                android:layout_width="500dp"
+                android:layout_height="50dp"
+                android:layout_below="@+id/submitButton"
+                android:layout_marginTop="10dp"
+                android:id="@+id/layout">
+                <TextView
+                    android:id="@+id/DepartureTime"
+                    android:layout_width="180dp"
+                    android:layout_height="50dp"
+                    android:layout_below="@+id/buttonCalculate"
+                    android:background="@drawable/rectangular_graybackgraund"
+                    android:text="Departure Time:"
+                    android:textAlignment="center"
+                    android:textSize="18sp"/>
+                <TextView
+                    android:id="@+id/ArrivalTime"
+                    android:layout_width="210dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/rectangular_graybackgraund"
+                    android:layout_marginLeft="10dp"
+                    android:text="Arrival Time:"
+                    android:textAlignment="center"
+
+                    android:layout_below="@+id/buttonCalculate"
+                    android:textSize="18sp"/>
+
+            </LinearLayout>
+            <TextView
+                android:id="@+id/RemainingTime"
+                android:layout_marginTop="10dp"
+                android:layout_width="180dp"
+                android:layout_height="50dp"
+                android:text="Remaining Time:"
+                android:textAlignment="center"
+
+                android:background="@drawable/rectangular_graybackgraund"
+                android:layout_below="@+id/layout"
+                android:textSize="18sp"/>
+            <!--
+            <TextView
+                android:id="@+id/lngLnt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="116dp"
+                android:layout_below="@+id/buttonCalculate"
+                android:text="Longitude:"
+                android:textSize="18sp"/>-->
+        </RelativeLayout>
+    </ScrollView>
+
+    <com.mapbox.maps.MapView
         android:layout_width="500dp"
-        android:layout_height="100dp"
-        android:layout_gravity="center_horizontal"
-        android:orientation="horizontal"
-        tools:ignore="MissingConstraints">
+        android:layout_height="800dp"
+        android:layout_marginTop="400dp"
+        android:id="@+id/mapView"
 
-        <Button
-            android:id="@+id/Return"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start|center"
-            android:layout_marginLeft="10dp"
-            android:backgroundTint="#88B29079"
-            android:drawableLeft="@drawable/arrow_back_24"
-            android:textAlignment="center"
-            android:textColor="#FFFFFF"
-            android:textSize="40px" />
-
-        <TextView
-            android:layout_width="240dp"
-            android:layout_height="match_parent"
-            android:backgroundTint="#EFEFEF"
-            android:gravity="center"
-            android:text="Notifications"
-            android:textColor="#000000"
-            android:textSize="60px" />
-
-    </LinearLayout>
+        />
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!--
+       <com.mapbox.navigation.ui.maneuver.view.MapboxManeuverView
+           android:id="@+id/maneuverView"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:elevation="4sp"
+           android:visibility="gone"
+           android:layout_below="@id/Return"
+           android:layout_margin="6sp"/>-->
+    <!--
+           <com.google.android.material.textfield.TextInputLayout
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:layout_marginStart="10sp"
+               android:layout_marginEnd="10sp"
+               android:elevation="4dp"
+               android:hint="Search"
+               android:layout_marginTop="10sp"
+               android:layout_below="@id/Return"
+               android:id="@+id/searchLayout"
+               app:boxCornerRadiusBottomEnd="20sp"
+               app:boxCornerRadiusBottomStart="20sp"
+               app:boxCornerRadiusTopEnd="20sp"
+               app:boxCornerRadiusTopStart="20sp"
+               app:boxStrokeWidthFocused="0sp"
+               app:boxStrokeWidth="0sp"
+               app:startIconDrawable="@drawable/baseline_search_24"
+               style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
+
+
+               <com.google.android.material.textfield.TextInputEditText
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:inputType="text"
+                   android:id="@+id/searchET"/>
+
+       </com.google.android.material.textfield.TextInputLayout>    -->
+
+
+
+
+    <!-- TextView to display Matrix API result -->
+
+    <com.mapbox.navigation.ui.voice.view.MapboxSoundButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="516sp"
+        android:layout_marginEnd="16sp"
+        android:id="@+id/soundButton"/>
+    <!--
+
+   <com.mapbox.search.ui.view.SearchResultsView
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:id="@+id/search_results_view"
+       android:layout_marginHorizontal="16dp"
+       android:layout_marginTop="16dp"
+       android:visibility="gone"
+       android:elevation="4dp"
+       android:paddingTop="8dp"
+       android:paddingBottom="22dp"
+       android:layout_below="@id/searchLayout" />
+       -->
+
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10sp"
+        android:layout_marginEnd="10sp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20sp"
+        android:id="@+id/setRoute"
+        android:textColor="@color/black"
+        android:backgroundTint="#efe7da"
+        android:text="Set Route"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/baseline_my_location_24"
+        android:id="@+id/focusLocation"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@id/setRoute"
+        android:layout_margin="16sp"/>
+
+</RelativeLayout>
